@@ -19,7 +19,7 @@ EwTrue = pickle.load(open(".//Datasets//DIY_Binary_RandomSelect2_100_100EWTrue.d
 
 LinUCB_algs_name = 'LT-LinUCB-2d'
 sigma = 1
-delta = 0.1
+delta = 0.01
 
 budgetList = [1, 2, 3, 4, 5, 6,
               10, 20, 50,
