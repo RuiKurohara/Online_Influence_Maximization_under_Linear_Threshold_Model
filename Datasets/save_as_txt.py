@@ -1,3 +1,4 @@
+import os
 import pickle
 
 def read_pickle_file(file_path):
@@ -18,13 +19,14 @@ def read_pickle_file(file_path):
         print(f"エラーが発生しました: {e}")
         return None
 
-def process_data(data):
+def process_data(file_path, data):
     """
     デシリアライズされたデータを処理し、テキストとして保存する関数。
     
+    :param file_path: 元の.dicファイルのパス
     :param data: デシリアライズされたデータ
     """
-    output_path = 'output.txt'
+    output_path = file_path.replace('.dic', '.txt')
     try:
         with open(output_path, 'w', encoding='utf-8') as file:
             for key, value in data.items():
@@ -35,10 +37,13 @@ def process_data(data):
         print(f"ファイルの書き込み中にエラーが発生しました: {e}")
 
 def main():
-    file_path = 'DIY_Binary_RandomSelect2_100_100EWTrue.dic'
-    data = read_pickle_file(file_path)
-    if data is not None:
-        process_data(data)
+    current_directory = os.getcwd()
+    for filename in os.listdir(current_directory):
+        if filename.endswith('.dic'):
+            file_path = os.path.join(current_directory, filename)
+            data = read_pickle_file(file_path)
+            if data is not None:
+                process_data(file_path, data)
 
 if __name__ == "__main__":
     main()
