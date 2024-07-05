@@ -35,7 +35,7 @@ def process_data(data):
         print(f"ファイルの書き込み中にエラーが発生しました: {e}")
 
 def main():
-    file_path = 'ER_node9_p_0.2EWTrue.dic'
+    file_path = 'DIY_Binary_RandomSelect2_100_100EWTrue.dic'
     data = read_pickle_file(file_path)
     if data is not None:
         process_data(data)
