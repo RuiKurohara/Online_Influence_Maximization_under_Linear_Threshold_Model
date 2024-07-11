@@ -1,49 +1,35 @@
 import os
+import networkx as nx
 import pickle
 
-def read_pickle_file(file_path):
-    """
-    Pickleファイルを読み込む関数。
+# Function to load graph from binary file and save node and edge information to a txt file
+def load_and_save_graph(filename):
+    with open(filename, 'rb') as f:
+        graph = pickle.load(f)
     
-    :param file_path: 読み込むファイルのパス
-    :return: デシリアライズされたオブジェクト
-    """
-    try:
-        with open(file_path, 'rb') as file:
-            data = pickle.load(file)
-            return data
-    except FileNotFoundError:
-        print(f"ファイルが見つかりません: {file_path}")
-        return None
-    except Exception as e:
-        print(f"エラーが発生しました: {e}")
-        return None
-
-def process_data(file_path, data):
-    """
-    デシリアライズされたデータを処理し、テキストとして保存する関数。
+    # Create an ER graph from the loaded data (assuming loaded data is a graph)
+    # Replace this with your specific logic for processing the loaded data
+    # For demonstration, assuming graph is loaded correctly as per previous steps
     
-    :param file_path: 元の.dicファイルのパス
-    :param data: デシリアライズされたデータ
-    """
-    output_path = file_path.replace('.dic', '.txt')
-    try:
-        with open(output_path, 'w', encoding='utf-8') as file:
-            for key, value in data.items():
-                line = f"キー: {key}, 値: {value}\n"
-                file.write(line)
-        print(f"データが {output_path} に保存されました。")
-    except Exception as e:
-        print(f"ファイルの書き込み中にエラーが発生しました: {e}")
+    # Generate the ER graph (random graph)
+    er_graph = nx.erdos_renyi_graph(24, 0.2)
 
-def main():
-    current_directory = os.getcwd()
-    for filename in os.listdir(current_directory):
-        if filename.endswith('.dic'):
-            file_path = os.path.join(current_directory, filename)
-            data = read_pickle_file(file_path)
-            if data is not None:
-                process_data(file_path, data)
+    # Save node and edge information to a txt file with the same name as the input file
+    output_filename = os.path.splitext(filename)[0] + '.txt'
+    with open(output_filename, 'w') as f:
+        f.write(f"Graph with {er_graph.number_of_nodes()} nodes and {er_graph.number_of_edges()} edges\n")
+        f.write("Nodes:\n")
+        for node, data in er_graph.nodes(data=True):
+            f.write(f"{node}: {data}\n")
+        f.write("Edges:\n")
+        for u, v, data in er_graph.edges(data=True):
+            f.write(f"{u} -> {v}: {data}\n")
+    
+    print(f"Graph information saved to {output_filename}")
 
-if __name__ == "__main__":
-    main()
+# List all files in the current directory with .G extension
+files = [file for file in os.listdir() if file.endswith('.G')]
+
+# Process each file
+for file in files:
+    load_and_save_graph(file)

@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 600px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#97c2fc", "id": "confBinarySelect2_100100_2d_new.py", "label": "confBinarySelect2_100100_2d_new.py", "shape": "dot"}, {"color": "#97c2fc", "id": "os.py", "label": "os.py", "shape": "dot"}, {"color": "#97c2fc", "id": "pickle.py", "label": "pickle.py", "shape": "dot"}, {"color": "#97c2fc", "id": "Tool.create_save_path.py", "label": "Tool.create_save_path.py", "shape": "dot"}, {"color": "#97c2fc", "id": "BanditAlg.IMLinUCB_LT_little_V_binary_2d.py", "label": "BanditAlg.IMLinUCB_LT_little_V_binary_2d.py", "shape": "dot"}, {"color": "#97c2fc", "id": "BanditAlg.OIM_ETC.py", "label": "BanditAlg.OIM_ETC.py", "shape": "dot"}, {"color": "#97c2fc", "id": "Oracle.BinaryOracle.py", "label": "Oracle.BinaryOracle.py", "shape": "dot"}, {"color": "#97c2fc", "id": "confBinarySelect2_2010_2d_new.py", "label": "confBinarySelect2_2010_2d_new.py", "shape": "dot"}, {"color": "#97c2fc", "id": "Main.py", "label": "Main.py", "shape": "dot"}, {"color": "#97c2fc", "id": "argparse.py", "label": "argparse.py", "shape": "dot"}, {"color": "#97c2fc", "id": "time.py", "label": "time.py", "shape": "dot"}, {"color": "#97c2fc", "id": "random.py", "label": "random.py", "shape": "dot"}, {"color": "#97c2fc", "id": "numpy.py", "label": "numpy.py", "shape": "dot"}, {"color": "#97c2fc", "id": "datetime.py", "label": "datetime.py", "shape": "dot"}, {"color": "#97c2fc", "id": "LT.LT.py", "label": "LT.LT.py", "shape": "dot"}, {"color": "#97c2fc", "id": "Oracle.EnumerateSeedsToGetHighestExpectation.py", "label": "Oracle.EnumerateSeedsToGetHighestExpectation.py", "shape": "dot"}, {"color": "#97c2fc", "id": "BanditAlg.IMLinUCB_LT.py", "label": "BanditAlg.IMLinUCB_LT.py", "shape": "dot"}, {"color": "#97c2fc", "id": "conf_gaussian_9node_ER_new.py", "label": "conf_gaussian_9node_ER_new.py", "shape": "dot"}, {"color": "#97c2fc", "id": "conf_gaussian_12node_ER_new.py", "label": "conf_gaussian_12node_ER_new.py", "shape": "dot"}, {"color": "#97c2fc", "id": "dependencies.py", "label": "dependencies.py", "shape": "dot"}, {"color": "#97c2fc", "id": "ast.py", "label": "ast.py", "shape": "dot"}, {"color": "#97c2fc", "id": "networkx.py", "label": "networkx.py", "shape": "dot"}, {"color": "#97c2fc", "id": "pyvis.network.py", "label": "pyvis.network.py", "shape": "dot"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": "confBinarySelect2_100100_2d_new.py", "to": "os.py"}, {"arrows": "to", "from": "confBinarySelect2_100100_2d_new.py", "to": "pickle.py"}, {"arrows": "to", "from": "confBinarySelect2_100100_2d_new.py", "to": "Tool.create_save_path.py"}, {"arrows": "to", "from": "confBinarySelect2_100100_2d_new.py", "to": "BanditAlg.IMLinUCB_LT_little_V_binary_2d.py"}, {"arrows": "to", "from": "confBinarySelect2_100100_2d_new.py", "to": "BanditAlg.OIM_ETC.py"}, {"arrows": "to", "from": "confBinarySelect2_100100_2d_new.py", "to": "Oracle.BinaryOracle.py"}, {"arrows": "to", "from": "confBinarySelect2_2010_2d_new.py", "to": "os.py"}, {"arrows": "to", "from": "confBinarySelect2_2010_2d_new.py", "to": "pickle.py"}, {"arrows": "to", "from": "confBinarySelect2_2010_2d_new.py", "to": "Tool.create_save_path.py"}, {"arrows": "to", "from": "confBinarySelect2_2010_2d_new.py", "to": "BanditAlg.IMLinUCB_LT_little_V_binary_2d.py"}, {"arrows": "to", "from": "confBinarySelect2_2010_2d_new.py", "to": "BanditAlg.OIM_ETC.py"}, {"arrows": "to", "from": "confBinarySelect2_2010_2d_new.py", "to": "Oracle.BinaryOracle.py"}, {"arrows": "to", "from": "Main.py", "to": "os.py"}, {"arrows": "to", "from": "Main.py", "to": "pickle.py"}, {"arrows": "to", "from": "Main.py", "to": "argparse.py"}, {"arrows": "to", "from": "Main.py", "to": "time.py"}, {"arrows": "to", "from": "Main.py", "to": "random.py"}, {"arrows": "to", "from": "Main.py", "to": "numpy.py"}, {"arrows": "to", "from": "Main.py", "to": "datetime.py"}, {"arrows": "to", "from": "Main.py", "to": "LT.LT.py"}, {"arrows": "to", "from": "Main.py", "to": "Oracle.EnumerateSeedsToGetHighestExpectation.py"}, {"arrows": "to", "from": "Main.py", "to": "Oracle.BinaryOracle.py"}, {"arrows": "to", "from": "Main.py", "to": "Tool.create_save_path.py"}, {"arrows": "to", "from": "Main.py", "to": "BanditAlg.OIM_ETC.py"}, {"arrows": "to", "from": "Main.py", "to": "BanditAlg.IMLinUCB_LT.py"}, {"arrows": "to", "from": "Main.py", "to": "BanditAlg.IMLinUCB_LT_little_V_binary_2d.py"}, {"arrows": "to", "from": "conf_gaussian_9node_ER_new.py", "to": "os.py"}, {"arrows": "to", "from": "conf_gaussian_9node_ER_new.py", "to": "pickle.py"}, {"arrows": "to", "from": "conf_gaussian_9node_ER_new.py", "to": "Tool.create_save_path.py"}, {"arrows": "to", "from": "conf_gaussian_9node_ER_new.py", "to": "BanditAlg.IMLinUCB_LT.py"}, {"arrows": "to", "from": "conf_gaussian_9node_ER_new.py", "to": "BanditAlg.OIM_ETC.py"}, {"arrows": "to", "from": "conf_gaussian_9node_ER_new.py", "to": "Oracle.EnumerateSeedsToGetHighestExpectation.py"}, {"arrows": "to", "from": "conf_gaussian_12node_ER_new.py", "to": "os.py"}, {"arrows": "to", "from": "conf_gaussian_12node_ER_new.py", "to": "pickle.py"}, {"arrows": "to", "from": "conf_gaussian_12node_ER_new.py", "to": "Tool.create_save_path.py"}, {"arrows": "to", "from": "conf_gaussian_12node_ER_new.py", "to": "BanditAlg.IMLinUCB_LT.py"}, {"arrows": "to", "from": "conf_gaussian_12node_ER_new.py", "to": "BanditAlg.OIM_ETC.py"}, {"arrows": "to", "from": "conf_gaussian_12node_ER_new.py", "to": "Oracle.EnumerateSeedsToGetHighestExpectation.py"}, {"arrows": "to", "from": "dependencies.py", "to": "os.py"}, {"arrows": "to", "from": "dependencies.py", "to": "ast.py"}, {"arrows": "to", "from": "dependencies.py", "to": "networkx.py"}, {"arrows": "to", "from": "dependencies.py", "to": "pyvis.network.py"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
