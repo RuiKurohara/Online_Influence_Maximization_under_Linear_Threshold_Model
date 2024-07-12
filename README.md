@@ -48,6 +48,10 @@ python Main.py --is_bipartite --seed_size 3 --iterationTimes 30000 --save_addres
 python Main.py --is_bipartite --seed_size 5 --iterationTimes 22000 --save_address SimulationResults/BinarySelect2_100100_2d --G_address Datasets//DIY_Binary_RandomSelect2_100_100.G --weight_address Datasets/DIY_Binary_RandomSelect2_100_100EWTrue.dic
 ```
 
+Kurohara
+```Run
+python Main.py --is_bipartite --seed_size 50 --iterationTimes 2000 --save_address SimulationResults/Instagram --G_address Datasets//Instagram.G --weight_address Datasets/Instagram_EWTrue.dic
+```
 
 
 ## Results
