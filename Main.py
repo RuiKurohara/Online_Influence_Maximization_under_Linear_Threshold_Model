@@ -136,10 +136,10 @@ if __name__ == '__main__':
     print(budgetList)
     print(args.budgetList)
 
-    if args.is_bipartite == True:
-        oracle = Oracle.BinaryOracle.getOracleOfBinary
+    if args.is_bipartite == True:#ネットワークが二部グラフのとき
+        oracle = Oracle.BinaryOracle.getOracleOfBinary#二部グラフ用オラクル
         calculate_exact_spreadsize = Oracle.BinaryOracle.getSpreadOfBinary
-        IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_2d
+        IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_2d#二部グラフ用LinUCB
 
     else:
         oracle = Oracle.EnumerateSeedsToGetHighestExpectation.Enumerate_oracle
