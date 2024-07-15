@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.sparse import eye
 import random
 import Oracle.OIM_LT_Oracle_new
 
@@ -19,7 +20,8 @@ class IMLinUCB_LT_Algorithm:
         self.IM_cal_reward = IM_cal_reward
         self.loss_list = []
 
-        self.V = np.eye(G.number_of_edges())
+        # スパース行列としてアイデンティティ行列を作成
+        self.V = eye(G.number_of_edges(), format='csr')
         self.b = np.zeros((G.number_of_edges(), 1))
         self.edge2Index = {}
         index = 0

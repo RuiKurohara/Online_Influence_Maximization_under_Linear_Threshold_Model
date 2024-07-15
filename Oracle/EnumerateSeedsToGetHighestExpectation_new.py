@@ -1,34 +1,39 @@
 import numpy as np
 from itertools import combinations
+
 # get random weight
 def getNextRandomWeight(weightLowerBound, weightUpperBound):
     weightNowPos = np.random.uniform(weightLowerBound, weightUpperBound)
     return weightNowPos
 
-
 ### get Best S with DFS - START
-def getActivateProbabiltiyByDFS(G, S, Ew, u, visitOneHot, node2Index):
-    uActivateProbability = 0
-    if u in S:
-        return 1
-    for parentEdge in G.in_edges(u):
-        if visitOneHot[node2Index[parentEdge[0]]] == 0:
-            visitOneHot[node2Index[parentEdge[0]]] = 1
-            uActivateProbability = uActivateProbability + Ew[parentEdge] * G[parentEdge[0]][parentEdge[1]]['weight'] \
-                                   * getActivateProbabiltiyByDFS(G, S, Ew, parentEdge[0], visitOneHot, node2Index)
-    return uActivateProbability
+#再起を用いないDFS
+def getActivateProbabilityByDFS_non_recursive(G, S, Ew, u, node2Index):
+    stack = [u]
+    probability = 0
+    visited = set()
+
+    while stack:
+        node = stack.pop()
+        if node in visited:
+            continue
+        visited.add(node)
+        if node in S:
+            return 1
+        for parentEdge in G.in_edges(node):
+            parent = parentEdge[0]
+            if node2Index[parent] not in visited:
+                stack.append(parent)
+                probability += Ew[parentEdge] * G[parentEdge[0]][parentEdge[1]]['weight']
+
+    return probability
 
 def getSpreadSizeByProbability(G, Ew, S):
-    node2Index = {}
-    index = 0
-    for tmp in G.nodes:
-        node2Index[tmp] = index
-        index += 1
+    node2Index = {node: idx for idx, node in enumerate(G.nodes)}
     SpreadSize = len(S)
     for u in G.nodes:
         if u not in S:  # Calculate all nodes that are not seed nodes
-            visitOneHot = np.zeros(G.number_of_nodes())
-            SpreadSize = SpreadSize + getActivateProbabiltiyByDFS(G, S, Ew, u, visitOneHot, node2Index)
+            SpreadSize += getActivateProbabilityByDFS_non_recursive(G, S, Ew, u, node2Index)
     return SpreadSize
 
 def getDifferentSeedSpread(G, Ew, K):
