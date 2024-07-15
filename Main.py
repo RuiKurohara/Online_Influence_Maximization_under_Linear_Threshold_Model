@@ -8,9 +8,11 @@ import datetime
 import LT.LT
 import Oracle.EnumerateSeedsToGetHighestExpectation
 import Oracle.BinaryOracle
+import Oracle.EnumerateSeedsToGetHighestExpectation_new
 from Tool.create_save_path import *
 from BanditAlg.OIM_ETC import OIM_ETC_Algorithm
 from BanditAlg.IMLinUCB_LT import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS
+from BanditAlg.IMLinUCB_LT_new import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS_new#新しいアルゴリズム
 from BanditAlg.IMLinUCB_LT_little_V_binary_2d import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_2d
 
 
@@ -121,6 +123,7 @@ class simulateOnlineData:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--is_bipartite', action='store_true', default=False)
+    parser.add_argument('--use_new_algorism', action='store_true', default=False)#作成したアルゴリズムを使用
     parser.add_argument("--seed_size", type=int, default=1, help="")
     parser.add_argument("--iterationTimes", type=int, default=50, help="")
     parser.add_argument("--save_address", type=str, default="SimulationResults/gaussian_9_ER", help="")
@@ -136,7 +139,12 @@ if __name__ == '__main__':
     print(budgetList)
     print(args.budgetList)
 
-    if args.is_bipartite == True:#ネットワークが二部グラフのとき
+    if args.use_new_algorism == True:#新しいアルゴリズムを使用
+        oracle = Oracle.EnumerateSeedsToGetHighestExpectation_new.Enumerate_oracle
+        calculate_exact_spreadsize = Oracle.EnumerateSeedsToGetHighestExpectation_new.getSpreadSizeByProbability
+        IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_TS_new
+
+    elif args.is_bipartite == True:#ネットワークが二部グラフのとき
         oracle = Oracle.BinaryOracle.getOracleOfBinary#二部グラフ用オラクル
         calculate_exact_spreadsize = Oracle.BinaryOracle.getSpreadOfBinary
         IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_2d#二部グラフ用LinUCB
