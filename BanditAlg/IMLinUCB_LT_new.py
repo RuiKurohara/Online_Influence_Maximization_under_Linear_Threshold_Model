@@ -1,8 +1,8 @@
 import numpy as np
-from scipy.sparse import eye
+from scipy.sparse import eye, csc_matrix
+from scipy.sparse.linalg import inv
 import random
-import Oracle.OIM_LT_Oracle_new
-
+import Oracle.OIM_LT_Oracle_new as Oracle
 
 class IMLinUCB_LT_Algorithm:
     def __init__(self, G, EwTrue, seed_size, iterationTime, sigma, delta, IM_oracle, IM_cal_reward,
@@ -34,23 +34,26 @@ class IMLinUCB_LT_Algorithm:
         self.scaleGaussianRatio = scaleGaussianRatio
         self.sampleStrategy = sampleStrategy
 
-
     def decide(self):
         m = self.G.number_of_edges()
         n = self.G.number_of_nodes()
-        if self.scaleTOrNot == True:
-            T = self.iterCounter+1
+        if self.scaleTOrNot:
+            T = self.iterCounter + 1
         else:
             T = self.iterationTime
-        c = (np.sqrt(m * np.log(1 + T * n) + 2 * np.log(T*(n+1-self.seed_size))) + np.sqrt(n)) ** 2
+        c = (np.sqrt(m * np.log(1 + T * n) + 2 * np.log(T * (n + 1 - self.seed_size))) + np.sqrt(n)) ** 2
         c = c * self.scaleCRatio
         epsilon = 1 / np.sqrt(self.iterationTime)
 
-        S, EwEstimated = Oracle.OIM_LT_Oracle.IMLinUCB_Oracle(self.V, self.b, c, epsilon, self.IM_oracle, self.IM_cal_reward, self.seed_size, self.G, self.edge2Index, sampleStrategy=self.sampleStrategy, scaleGaussianRatio=self.scaleGaussianRatio)
+        S, EwEstimated = Oracle.IMLinUCB_Oracle(
+            self.V, self.b, c, epsilon, self.IM_oracle, self.IM_cal_reward,
+            self.seed_size, self.G, self.edge2Index, sampleStrategy=self.sampleStrategy,
+            scaleGaussianRatio=self.scaleGaussianRatio
+        )
 
         norm1BetweenEwEstimate_EwTrue = 0
         for u, v in self.EwTrue:
-            norm1BetweenEwEstimate_EwTrue = norm1BetweenEwEstimate_EwTrue + abs(EwEstimated[(u, v)] - self.EwTrue[(u, v)])*self.G[u][v]['weight']
+            norm1BetweenEwEstimate_EwTrue += abs(EwEstimated[(u, v)] - self.EwTrue[(u, v)]) * self.G[u][v]['weight']
         print("norm1BetweenEwEstimate_EwTrue", norm1BetweenEwEstimate_EwTrue)
         self.loss_list.append(norm1BetweenEwEstimate_EwTrue)
         return S, EwEstimated
@@ -100,7 +103,7 @@ class IMLinUCB_LT_Algorithm:
                         activeEdgeOnehot_v[indexOfEdge][0] = 1
                 y = 0
             self.V = self.V + activeEdgeOnehot_v.dot(activeEdgeOnehot_v.T)
-            self.b = self.b + activeEdgeOnehot_v*y
+            self.b = self.b + activeEdgeOnehot_v * y
         self.iterCounter += 1
 
     def getLoss(self):
