@@ -3,7 +3,7 @@ import networkx as nx
 import pickle
 import matplotlib.pyplot as plt
 import random
-nodesNum = 300
+nodesNum = 50
 p = 0.20
 save_graph_dir = '..//Datasets//'
 
