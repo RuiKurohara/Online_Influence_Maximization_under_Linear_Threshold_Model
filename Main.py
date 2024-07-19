@@ -195,9 +195,9 @@ if __name__ == '__main__':
 
     algorithms[LinUCB_algs_name] = IMLinUCB_LT_Algorithm(G, EwTrue, seed_size, iterationTimes, sigma, delta, oracle,
                                                          calculate_exact_spreadsize)
-
+    """
     for budgetTime in budgetList:
         algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,
                                                                     budgetTime=budgetTime)
-
+    """
     simExperiment.runAlgorithms(algorithms=algorithms)
