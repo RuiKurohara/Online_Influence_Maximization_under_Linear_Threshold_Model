@@ -12,9 +12,8 @@ import Oracle.EnumerateSeedsToGetHighestExpectation_new
 from Tool.create_save_path import *
 from BanditAlg.OIM_ETC import OIM_ETC_Algorithm
 from BanditAlg.IMLinUCB_LT import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS
-from BanditAlg.IMLinUCB_LT_new import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS_new#新しいアルゴリズム
+from BanditAlg.IMLinUCB_LT_new import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS_new  # 新しいアルゴリズム
 from BanditAlg.IMLinUCB_LT_little_V_binary_2d import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_2d
-
 
 
 class simulateOnlineData:
@@ -80,27 +79,37 @@ class simulateOnlineData:
         if iter_ is None:
             # Initialize the header
             timeRun = self.startTime.strftime('_%m_%d_%H_%M_%S')
-            fileSig = '_seedsize' + str(self.seed_size) + '_iter' + str(self.iterationTime) + '_' + self.dataset + "_RandomSeed" + str(RandomSeed)
+            fileSig = '_seedsize' + str(self.seed_size) + '_iter' + str(self.iterationTime) + '_' + self.dataset + "_RandomSeed" + str(self.RandomSeed)
 
             self.filenameWriteReward = os.path.join(save_address, 'Reward/Reward' + timeRun + fileSig + '.csv')
+            os.makedirs(os.path.dirname(self.filenameWriteReward), exist_ok=True)
             with open(self.filenameWriteReward, 'w') as f:
                 f.write('Time(Iteration)')
                 f.write(',' + ','.join([str(alg_name) for alg_name in algorithms.keys()]))
                 f.write('\n')
 
             self.filenameWriteParameterLoss = os.path.join(save_address, 'ParameterLoss/Lossweight' + timeRun + fileSig + '.csv')
+            os.makedirs(os.path.dirname(self.filenameWriteParameterLoss), exist_ok=True)
             with open(self.filenameWriteParameterLoss, 'w') as f:
                 f.write('Time(Iteration)')
                 f.write(',' + ','.join([str(alg_name) for alg_name in algorithms.keys()]))
                 f.write('\n')
 
             self.filenameWriteRegret = os.path.join(save_address, 'Regret/Regret' + timeRun + fileSig + '.csv')
+            os.makedirs(os.path.dirname(self.filenameWriteRegret), exist_ok=True)
             with open(self.filenameWriteRegret, 'w') as f:
                 f.write('Time(Iteration)')
                 f.write(',' + ','.join([str(alg_name) for alg_name in algorithms.keys()]))
                 f.write('\n')
+
+            self.filenameWriteElapsedTime = os.path.join(save_address, 'ElapsedTime/ElapsedTime' + timeRun + fileSig + '.csv')
+            os.makedirs(os.path.dirname(self.filenameWriteElapsedTime), exist_ok=True)
+            with open(self.filenameWriteElapsedTime, 'w') as f:
+                f.write('Time(Iteration),ElapsedTime\n')
+
         else:
-            print("Iteration %d" % iter_, " Elapsed time", datetime.datetime.now() - self.startTime)
+            elapsed_time = datetime.datetime.now() - self.startTime
+            print("Iteration %d" % iter_, " Elapsed time", elapsed_time)
             self.tim_.append(iter_)
             with open(self.filenameWriteReward, 'a+') as f:
                 f.write(str(iter_))
@@ -120,10 +129,14 @@ class simulateOnlineData:
                     ',' + ','.join([str(self.AlgRegret[alg_name][-1]) for alg_name in algorithms.keys()]))
                 f.write('\n')
 
+            with open(self.filenameWriteElapsedTime, 'a+') as f:
+                f.write(f'{iter_},{elapsed_time}\n')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--is_bipartite', action='store_true', default=False)
-    parser.add_argument('--use_new_algorism', action='store_true', default=False)#作成したアルゴリズムを使用
+    parser.add_argument('--use_new_algorism', action='store_true', default=False)  # 作成したアルゴリズムを使用
     parser.add_argument("--seed_size", type=int, default=1, help="")
     parser.add_argument("--iterationTimes", type=int, default=50, help="")
     parser.add_argument("--save_address", type=str, default="SimulationResults/gaussian_9_ER", help="")
@@ -139,21 +152,22 @@ if __name__ == '__main__':
     print(budgetList)
     print(args.budgetList)
 
-    if args.use_new_algorism == True:#新しいアルゴリズムを使用
+    if args.use_new_algorism:
+        # 新しいアルゴリズムを使用
         oracle = Oracle.EnumerateSeedsToGetHighestExpectation_new.Enumerate_oracle
         calculate_exact_spreadsize = Oracle.EnumerateSeedsToGetHighestExpectation_new.getSpreadSizeByProbability
         IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_TS_new
 
-    elif args.is_bipartite == True:#ネットワークが二部グラフのとき
-        oracle = Oracle.BinaryOracle.getOracleOfBinary#二部グラフ用オラクル
+    elif args.is_bipartite:
+        # ネットワークが二部グラフのとき
+        oracle = Oracle.BinaryOracle.getOracleOfBinary  # 二部グラフ用オラクル
         calculate_exact_spreadsize = Oracle.BinaryOracle.getSpreadOfBinary
-        IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_2d#二部グラフ用LinUCB
+        IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_2d  # 二部グラフ用LinUCB
 
     else:
         oracle = Oracle.EnumerateSeedsToGetHighestExpectation.Enumerate_oracle
         calculate_exact_spreadsize = Oracle.EnumerateSeedsToGetHighestExpectation.getSpreadSizeByProbability
         IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_TS
-
 
     seed_size = args.seed_size
     iterationTimes = args.iterationTimes
@@ -175,10 +189,12 @@ if __name__ == '__main__':
     print("Num of nodes", len(G.nodes))
     print("Num of edges", len(G.in_edges))
 
-    simExperiment = simulateOnlineData(G, EwTrue, seed_size, oracle, calculate_exact_spreadsize, iterationTimes, dataset_name, RandomSeed)
+    simExperiment = simulateOnlineData(G, EwTrue, seed_size, oracle, calculate_exact_spreadsize, iterationTimes,
+                                       dataset_name, RandomSeed)
     algorithms = {}
 
-    algorithms[LinUCB_algs_name] = IMLinUCB_LT_Algorithm(G, EwTrue, seed_size, iterationTimes, sigma, delta, oracle, calculate_exact_spreadsize)
+    algorithms[LinUCB_algs_name] = IMLinUCB_LT_Algorithm(G, EwTrue, seed_size, iterationTimes, sigma, delta, oracle,
+                                                         calculate_exact_spreadsize)
 
     for budgetTime in budgetList:
         algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,
