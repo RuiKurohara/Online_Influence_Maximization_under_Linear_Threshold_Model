@@ -1,0 +1,2 @@
+# python Main.py --seed_size 3 --iterationTimes 6000 --save_address SimulationResults/gaussian_12_ER --G_address Datasets//ER_node12_p_0.2.G --weight_address Datasets/ER_node12_p_0.2EWTrue.dic
+ python Main.py --seed_size 3 --iterationTimes 1000 --save_address SimulationResults/gaussian_12_ER_GA --G_address Datasets//ER_node12_p_0.2.G --weight_address Datasets/ER_node12_p_0.2EWTrue.dic --use_GA_algorithm

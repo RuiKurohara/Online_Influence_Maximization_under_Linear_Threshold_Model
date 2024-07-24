@@ -8,11 +8,13 @@ import datetime
 import LT.LT
 import Oracle.EnumerateSeedsToGetHighestExpectation
 import Oracle.BinaryOracle
+import Oracle.EnumerateSeedsToGetHighestExpectation_GA
 import Oracle.EnumerateSeedsToGetHighestExpectation_new
 from Tool.create_save_path import *
 from BanditAlg.OIM_ETC import OIM_ETC_Algorithm
 from BanditAlg.IMLinUCB_LT import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS
 from BanditAlg.IMLinUCB_LT_new import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS_new  # 新しいアルゴリズム
+from BanditAlg.IMLinUCB_LT_GA import IMLinUCB_LT_Algorithm_GA as IMLinUCB_LT_Algorithm_TS_GA  # GAアルゴリズム
 from BanditAlg.IMLinUCB_LT_little_V_binary_2d import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_2d
 
 
@@ -136,7 +138,8 @@ class simulateOnlineData:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--is_bipartite', action='store_true', default=False)
-    parser.add_argument('--use_new_algorism', action='store_true', default=False)  # 作成したアルゴリズムを使用
+    parser.add_argument('--use_new_algorithm', action='store_true', default=False)  # 作成したアルゴリズムを使用
+    parser.add_argument('--use_GA_algorithm', action='store_true', default=False)  # GAアルゴリズムを使用
     parser.add_argument("--seed_size", type=int, default=1, help="")
     parser.add_argument("--iterationTimes", type=int, default=50, help="")
     parser.add_argument("--save_address", type=str, default="SimulationResults/gaussian_9_ER", help="")
@@ -152,11 +155,16 @@ if __name__ == '__main__':
     print(budgetList)
     print(args.budgetList)
 
-    if args.use_new_algorism:
+    if args.use_new_algorithm:
         # 新しいアルゴリズムを使用
         oracle = Oracle.EnumerateSeedsToGetHighestExpectation_new.Enumerate_oracle
         calculate_exact_spreadsize = Oracle.EnumerateSeedsToGetHighestExpectation_new.getSpreadSizeByProbability
         IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_TS_new
+
+    elif args.use_new_algorithm:
+        oracle = Oracle.EnumerateSeedsToGetHighestExpectation_GA.Enumerate_oracle
+        calculate_exact_spreadsize = Oracle.EnumerateSeedsToGetHighestExpectation_GA.getSpreadSizeByProbability
+        IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_TS_GA
 
     elif args.is_bipartite:
         # ネットワークが二部グラフのとき
@@ -199,5 +207,6 @@ if __name__ == '__main__':
     for budgetTime in budgetList:
         algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,
                                                                     budgetTime=budgetTime)
+    ETCとの比較しないときコメントアウト
     """
     simExperiment.runAlgorithms(algorithms=algorithms)
