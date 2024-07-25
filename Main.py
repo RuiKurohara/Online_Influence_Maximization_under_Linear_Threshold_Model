@@ -161,7 +161,7 @@ if __name__ == '__main__':
         calculate_exact_spreadsize = Oracle.EnumerateSeedsToGetHighestExpectation_new.getSpreadSizeByProbability
         IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_TS_new
 
-    elif args.use_new_algorithm:
+    elif args.use_GA_algorithm:
         oracle = Oracle.EnumerateSeedsToGetHighestExpectation_GA.Enumerate_oracle
         calculate_exact_spreadsize = Oracle.EnumerateSeedsToGetHighestExpectation_GA.getSpreadSizeByProbability
         IMLinUCB_LT_Algorithm = IMLinUCB_LT_Algorithm_TS_GA

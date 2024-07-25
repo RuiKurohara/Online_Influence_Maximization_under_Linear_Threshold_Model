@@ -26,7 +26,7 @@ def getNextRandomWeight(weightLowerBound, weightUpperBound):
     weightNowPos = np.random.uniform(weightLowerBound, weightUpperBound)
     return weightNowPos
 
-def IMLinUCB_Oracle(V, b, c, epsilon, IM_oracle, IM_cal_reward, K, G, edge2Index, sampleStrategy="RandomGenerate", scaleGaussianRatio=1):
+def IMLinUCB_Oracle(V, b, c, epsilon, IM_oracle, IM_cal_reward, K, G, edge2Index, sampleStrategy="RandomGenerate", scaleGaussianRatio=1, seed_set=None):
     sideLength = (2 / np.sqrt(3)) * epsilon
     V_sparse = csc_matrix(V)
     invV = sparse_inv(V_sparse)
@@ -78,7 +78,12 @@ def IMLinUCB_Oracle(V, b, c, epsilon, IM_oracle, IM_cal_reward, K, G, edge2Index
                 indexEdge = edge2Index[edge]
                 EwEstimated[(edge[0], edge[1])] = weightNowPos[indexEdge] / G[edge[0]][edge[1]]['weight']
 
-            S = IM_oracle(G, EwEstimated, K)
+            # Use the provided seed_set if available, otherwise, find the best seed set
+            if seed_set is not None:
+                S = seed_set
+            else:
+                S = IM_oracle(G, EwEstimated, K)
+
             SpreadSize = IM_cal_reward(G, EwEstimated, S)
 
             if SpreadSize > BestReward:

@@ -75,11 +75,16 @@ class IMLinUCB_LT_Algorithm_GA:
         norm1BetweenEwEstimate_EwTrue = 0
         for u, v in self.EwTrue:
             norm1BetweenEwEstimate_EwTrue += abs(EwEstimated[(u, v)] - self.EwTrue[(u, v)]) * self.G[u][v]['weight']
-        return -norm1BetweenEwEstimate_EwTrue  # Minimize the loss
-
+        loss = -norm1BetweenEwEstimate_EwTrue  # Minimize the loss
+        self.loss_list.append(loss)  # ここで loss_list を更新
+        return loss
+    
     def select_parents(self, population, fitness_scores):
-        selected = np.random.choice(population, size=self.population_size, p=fitness_scores/np.sum(fitness_scores))
-        return selected
+        fitness_scores = np.array(fitness_scores)
+        probabilities = fitness_scores / fitness_scores.sum()
+        selected_indices = np.random.choice(range(self.population_size), size=self.population_size, p=probabilities)
+        return [population[i] for i in selected_indices]
+
 
     def crossover(self, parent1, parent2):
         if random.random() < self.crossover_rate:
@@ -102,8 +107,10 @@ class IMLinUCB_LT_Algorithm_GA:
         for generation in range(self.generations):
             fitness_scores = self.evaluate_population(population)
             new_population = []
+            selected_parents = self.select_parents(population, fitness_scores)
             for i in range(0, self.population_size, 2):
-                parent1, parent2 = self.select_parents(population, fitness_scores)
+                parent1 = selected_parents[i]
+                parent2 = selected_parents[i+1] if i+1 < self.population_size else selected_parents[0]
                 child1, child2 = self.crossover(parent1, parent2)
                 child1 = self.mutate(child1)
                 child2 = self.mutate(child2)
@@ -152,3 +159,13 @@ class IMLinUCB_LT_Algorithm_GA:
 
     def getLoss(self):
         return np.asarray(self.loss_list)
+
+# Example usage for testing
+if __name__ == "__main__":
+    G = nx.DiGraph()
+    # Add nodes and edges to G as needed
+    Ew = {edge: getNextRandomWeight(0.1, 0.9) for edge in G.edges}
+    K = 3  # Number of seeds
+    alg = IMLinUCB_LT_Algorithm_GA(G, Ew, K, 100, 0.1, 0.1, heuristic_seed_selection, getSpreadSizeByProbability)
+    best_seeds, best_spread = alg.decide()
+    print(f"Best seeds: {best_seeds}, Spread size: {best_spread}")
