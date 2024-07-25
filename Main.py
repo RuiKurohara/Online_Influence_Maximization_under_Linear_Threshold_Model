@@ -136,7 +136,7 @@ class simulateOnlineData:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--is_bipartite', action='store_true', default=False)
-    parser.add_argument('--use_new_algorism', action='store_true', default=False)  # 作成したアルゴリズムを使用
+    parser.add_argument('--use_new_algorithm', action='store_true', default=False)  # 作成したアルゴリズムを使用
     parser.add_argument("--seed_size", type=int, default=1, help="")
     parser.add_argument("--iterationTimes", type=int, default=50, help="")
     parser.add_argument("--save_address", type=str, default="SimulationResults/gaussian_9_ER", help="")
@@ -152,7 +152,7 @@ if __name__ == '__main__':
     print(budgetList)
     print(args.budgetList)
 
-    if args.use_new_algorism:
+    if args.use_new_algorithm:
         # 新しいアルゴリズムを使用
         oracle = Oracle.EnumerateSeedsToGetHighestExpectation_new.Enumerate_oracle
         calculate_exact_spreadsize = Oracle.EnumerateSeedsToGetHighestExpectation_new.getSpreadSizeByProbability
