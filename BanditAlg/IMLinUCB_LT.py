@@ -1,11 +1,12 @@
 import numpy as np
 import random
 import Oracle.OIM_LT_Oracle
+import datetime
 
 
 class IMLinUCB_LT_Algorithm:
     def __init__(self, G, EwTrue, seed_size, iterationTime, sigma, delta, IM_oracle, IM_cal_reward,
-                 scaleTOrNot=False, scaleCRatio=1, scaleGaussianRatio=1, sampleStrategy="GaussianPrioritySample"):
+                 scaleTOrNot=False, scaleCRatio=1, scaleGaussianRatio=1, sampleStrategy="GaussianPrioritySample"):#デフォルトでGaussianPrioritySampleを使うよう設定
         # initiate Algorithms parameters
         self.G = G
         self.EwTrue = EwTrue  # For comparison
@@ -33,6 +34,7 @@ class IMLinUCB_LT_Algorithm:
         self.sampleStrategy = sampleStrategy
 
 
+    #シードを決定、重み推定
     def decide(self):
         m = self.G.number_of_edges()
         n = self.G.number_of_nodes()
@@ -44,11 +46,15 @@ class IMLinUCB_LT_Algorithm:
         c = c * self.scaleCRatio
         epsilon = 1 / np.sqrt(self.iterationTime)
 
-        S, EwEstimated = Oracle.OIM_LT_Oracle.IMLinUCB_Oracle(self.V, self.b, c, epsilon, self.IM_oracle, self.IM_cal_reward, self.seed_size, self.G, self.edge2Index, sampleStrategy=self.sampleStrategy, scaleGaussianRatio=self.scaleGaussianRatio)
+        start_oracle=datetime.datetime.now()
+        S, EwEstimated = Oracle.OIM_LT_Oracle.IMLinUCB_Oracle(self.V, self.b, c, epsilon, self.IM_oracle, self.IM_cal_reward, self.seed_size, self.G, self.edge2Index, sampleStrategy=self.sampleStrategy, scaleGaussianRatio=self.scaleGaussianRatio)#時間かかる
+        print("oracle_time",datetime.datetime.now()-start_oracle)
 
+        start_EwTrue=datetime.datetime.now()
         norm1BetweenEwEstimate_EwTrue = 0
         for u, v in self.EwTrue:
             norm1BetweenEwEstimate_EwTrue = norm1BetweenEwEstimate_EwTrue + abs(EwEstimated[(u, v)] - self.EwTrue[(u, v)])*self.G[u][v]['weight']
+        print("EwtrueEstimate_tame",datetime.datetime.now()-start_EwTrue)
         print("norm1BetweenEwEstimate_EwTrue", norm1BetweenEwEstimate_EwTrue)
         self.loss_list.append(norm1BetweenEwEstimate_EwTrue)
         return S, EwEstimated
@@ -103,3 +109,8 @@ class IMLinUCB_LT_Algorithm:
 
     def getLoss(self):
         return np.asarray(self.loss_list)
+    
+
+"""
+forループはすべてエッジの数だけ　O(m)
+"""

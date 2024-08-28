@@ -1,6 +1,7 @@
 import copy
 import random
 import numpy as np
+import datetime
 
 
 # get Weigh one by one
@@ -57,13 +58,15 @@ def IMLinUCB_Oracle(V, b, c, epsilon, IM_oracle, IM_cal_reward, K, G, edge2Index
             choiceAns = random.choice(range(sampleRatio))
             if choiceAns == 0:
                 continue
-        elif sampleStrategy == "GaussianPrioritySample":
+        elif sampleStrategy == "GaussianPrioritySample":#使っているやつ
+            #start_getweigh=datetime.datetime.now()
             cToJudge = c
             weightAveragePos = invVb
             correlation = invV*scaleGaussianRatio
             weightNowPos = np.random.multivariate_normal(weightAveragePos.flatten(), correlation).reshape(weightAveragePos.shape)
             weightNowPos = weightNowPos.clip(0, 1)
             sampleSize = 10
+            #print("get_next_weight_time",datetime.datetime.now()-start_getweigh)
             if indexOfGaussianPrioritySample == sampleSize:
                 break
             pass
@@ -79,11 +82,13 @@ def IMLinUCB_Oracle(V, b, c, epsilon, IM_oracle, IM_cal_reward, K, G, edge2Index
         if sampleStrategy == "GaussianPrioritySample" or (weightNowPos-invVb).T.dot(V).dot(weightNowPos-invVb) <= cToJudge:
             i = i + 1
             EwEstimated = {}
-            for edge in G.in_edges():
+            for edge in G.in_edges():#エッジ数分ループ
                 indexEdge = edge2Index[edge]
                 EwEstimated[(edge[0], edge[1])] = weightNowPos[indexEdge][0]/G[edge[0]][edge[1]]['weight']
 
+            start_oracle=datetime.datetime.now()
             S = IM_oracle(G, EwEstimated, K)
+            print("get_seed_time",datetime.datetime.now()-start_oracle)
             SpreadSize = IM_cal_reward(G, EwEstimated, S)
 
             if SpreadSize > BestReward:

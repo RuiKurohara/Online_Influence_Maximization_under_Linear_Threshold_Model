@@ -1,5 +1,6 @@
 import numpy as np
 from itertools import combinations
+import datetime
 # get random weight
 def getNextRandomWeight(weightLowerBound, weightUpperBound):
     weightNowPos = np.random.uniform(weightLowerBound, weightUpperBound)
@@ -18,6 +19,11 @@ def getActivateProbabiltiyByDFS(G, S, Ew, u, visitOneHot, node2Index):
                                    * getActivateProbabiltiyByDFS(G, S, Ew, parentEdge[0], visitOneHot, node2Index)
     return uActivateProbability
 
+"""
+n=20:0.001sくらい
+n=50:0.01sくらい
+n=300で1.4sくらい
+"""
 def getSpreadSizeByProbability(G, Ew, S):
     node2Index = {}
     index = 0
@@ -31,11 +37,13 @@ def getSpreadSizeByProbability(G, Ew, S):
             SpreadSize = SpreadSize + getActivateProbabiltiyByDFS(G, S, Ew, u, visitOneHot, node2Index)
     return SpreadSize
 
-def getDifferentSeedSpread(G, Ew, K):
+def getDifferentSeedSpread(G, Ew, K):#！！！時間かかる犯人！！！
     BestSpreadSize = 0
     BestSeedSet = []
-    for seedCombination in combinations(G.nodes, K):
+    for seedCombination in combinations(G.nodes, K):#組み合わせnCK分ループ
+        #start_tmpSpreadSize=datetime.datetime.now()
         tmpSpreadSize = getSpreadSizeByProbability(G, Ew, seedCombination)
+        #print("start_tmpSpreadSize",datetime.datetime.now()-start_tmpSpreadSize)
         if tmpSpreadSize > BestSpreadSize:
             BestSpreadSize = tmpSpreadSize
             BestSeedSet = list(seedCombination)

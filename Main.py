@@ -47,26 +47,34 @@ class simulateOnlineData:
         for iter_ in range(self.iterationTime):
             for alg_name, alg in list(algorithms.items()):
                 # 1. use Online Algs to decide seed
+                start_decide=datetime.datetime.now()
                 print("\n1. Get seed with Online Algs")
                 S, EwEstimated = alg.decide()
                 print("seed set", S)  # list
+                print("decide_time",datetime.datetime.now()-start_decide)
 
                 # 2. get live_edge/node from LT
                 # observe edge level feedback
+                start_sim=datetime.datetime.now()
                 print("2. Simulate Influence Spreading on LT")
                 reward, finalInfluencedNodeList, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore = LT.LT.runLT_NodeFeedback(
                     G, S, EwTrue)
                 print("Simulated Result: size is", reward)
+                print("sim_time",datetime.datetime.now()-start_sim)
 
                 # 2 get Reward
+                start_reward=datetime.datetime.now()
                 print("2. Get Expectation Reward of Algs Seeds")
                 reward = self.calculate_exact_spreadsize(self.G, self.EwTrue, S)
                 print("Expected Reward: size is", reward)
+                print("reward_time",datetime.datetime.now()-start_reward)
 
                 # 3. Update parameters A b
+                start_update=datetime.datetime.now()
                 print("3. Update parameters A b")
                 alg.updateParameters(finalInfluencedNodeList, attemptingActivateInNodeDir,
                                      ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore)
+                print("update_time",datetime.datetime.now()-start_update)
 
                 # 4. Record results
                 self.AlgReward[alg_name].append(reward)
@@ -201,12 +209,13 @@ if __name__ == '__main__':
                                        dataset_name, RandomSeed)
     algorithms = {}
 
+    
     algorithms[LinUCB_algs_name] = IMLinUCB_LT_Algorithm(G, EwTrue, seed_size, iterationTimes, sigma, delta, oracle,
                                                          calculate_exact_spreadsize)
     """
     for budgetTime in budgetList:
         algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,
                                                                     budgetTime=budgetTime)
-    ETCとの比較しないときコメントアウト
+    #ETCとの比較しないときコメントアウト
     """
     simExperiment.runAlgorithms(algorithms=algorithms)

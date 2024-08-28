@@ -1,46 +1,49 @@
 import numpy as np
 from itertools import combinations
-
+import datetime
 # get random weight
 def getNextRandomWeight(weightLowerBound, weightUpperBound):
     weightNowPos = np.random.uniform(weightLowerBound, weightUpperBound)
     return weightNowPos
 
+
 ### get Best S with DFS - START
-#再起を用いないDFS
-def getActivateProbabilityByDFS_non_recursive(G, S, Ew, u, node2Index):
-    stack = [u]
-    probability = 0
-    visited = set()
+def getActivateProbabiltiyByDFS(G, S, Ew, u, visitOneHot, node2Index):
+    uActivateProbability = 0
+    if u in S:
+        return 1
+    for parentEdge in G.in_edges(u):
+        if visitOneHot[node2Index[parentEdge[0]]] == 0:
+            visitOneHot[node2Index[parentEdge[0]]] = 1
+            uActivateProbability = uActivateProbability + Ew[parentEdge] * G[parentEdge[0]][parentEdge[1]]['weight'] \
+                                   * getActivateProbabiltiyByDFS(G, S, Ew, parentEdge[0], visitOneHot, node2Index)
+    return uActivateProbability
 
-    while stack:
-        node = stack.pop()
-        if node in visited:
-            continue
-        visited.add(node)
-        if node in S:
-            return 1
-        for parentEdge in G.in_edges(node):
-            parent = parentEdge[0]
-            if node2Index[parent] not in visited:
-                stack.append(parent)
-                probability += Ew[parentEdge] * G[parentEdge[0]][parentEdge[1]]['weight']
-
-    return probability
-
+"""
+n=20:0.001sくらい
+n=50:0.01sくらい
+n=300で1.4sくらい
+"""
 def getSpreadSizeByProbability(G, Ew, S):
-    node2Index = {node: idx for idx, node in enumerate(G.nodes)}
+    node2Index = {}
+    index = 0
+    for tmp in G.nodes:
+        node2Index[tmp] = index
+        index += 1
     SpreadSize = len(S)
     for u in G.nodes:
         if u not in S:  # Calculate all nodes that are not seed nodes
-            SpreadSize += getActivateProbabilityByDFS_non_recursive(G, S, Ew, u, node2Index)
+            visitOneHot = np.zeros(G.number_of_nodes())
+            SpreadSize = SpreadSize + getActivateProbabiltiyByDFS(G, S, Ew, u, visitOneHot, node2Index)
     return SpreadSize
 
-def getDifferentSeedSpread(G, Ew, K):
+def getDifferentSeedSpread(G, Ew, K):#！！！時間かかる犯人！！！
     BestSpreadSize = 0
     BestSeedSet = []
-    for seedCombination in combinations(G.nodes, K):
+    for seedCombination in combinations(G.nodes, K):#組み合わせnCK分ループ
+        #start_tmpSpreadSize=datetime.datetime.now()
         tmpSpreadSize = getSpreadSizeByProbability(G, Ew, seedCombination)
+        #print("start_tmpSpreadSize",datetime.datetime.now()-start_tmpSpreadSize)
         if tmpSpreadSize > BestSpreadSize:
             BestSpreadSize = tmpSpreadSize
             BestSeedSet = list(seedCombination)
