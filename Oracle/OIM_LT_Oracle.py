@@ -86,9 +86,9 @@ def IMLinUCB_Oracle(V, b, c, epsilon, IM_oracle, IM_cal_reward, K, G, edge2Index
                 indexEdge = edge2Index[edge]
                 EwEstimated[(edge[0], edge[1])] = weightNowPos[indexEdge][0]/G[edge[0]][edge[1]]['weight']
 
-            start_oracle=datetime.datetime.now()
+            #start_oracle=datetime.datetime.now()
             S = IM_oracle(G, EwEstimated, K)
-            print("get_seed_time",datetime.datetime.now()-start_oracle)
+            #print("get_seed_time",datetime.datetime.now()-start_oracle)
             SpreadSize = IM_cal_reward(G, EwEstimated, S)
 
             if SpreadSize > BestReward:

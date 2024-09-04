@@ -15,7 +15,7 @@ class Node(object):
         self.flag = None
         self.list_index = 0
 
-def celfpp(graph, k):
+def celfpp(graph,ew, k):##重み付きに変更する必要あり
     S = set()
     # Note that heapdict is min heap and hence add negative priorities for
     # it to work.
@@ -29,9 +29,9 @@ def celfpp(graph, k):
 
     for node in graph.nodes:
         node_data = Node(node)
-        node_data.mg1 = lt_model.diffuse_mc([node])
+        node_data.mg1 = lt_model.diffuse_mc([node],ew)
         node_data.prev_best = cur_best
-        node_data.mg2 = lt_model.diffuse_mc([node, cur_best.node]) if cur_best else node_data.mg1
+        node_data.mg2 = lt_model.diffuse_mc([node, cur_best.node],ew) if cur_best else node_data.mg1
         node_data.flag = 0
         cur_best = cur_best if cur_best and cur_best.mg1 > node_data.mg1 else node_data
         graph.nodes[node]['node_data'] = node_data
@@ -50,16 +50,16 @@ def celfpp(graph, k):
         elif node_data.prev_best == last_seed:
             node_data.mg1 = node_data.mg2
         else:
-            before = lt_model.diffuse_mc(S)
+            before = lt_model.diffuse_mc(S,ew)
             S.add(node_data.node)
-            after = lt_model.diffuse_mc(S)
+            after = lt_model.diffuse_mc(S,ew)
             S.remove(node_data.node)
             node_data.mg1 = after - before
             node_data.prev_best = cur_best
             S.add(cur_best.node)
-            before = lt_model.diffuse_mc(S)
+            before = lt_model.diffuse_mc(S,ew)
             S.add(node_data.node)
-            after = lt_model.diffuse_mc(S)
+            after = lt_model.diffuse_mc(S,ew)
             S.remove(cur_best.node)
             if node_data.node != cur_best.node: S.remove(node_data.node)
             node_data.mg2 = after - before
@@ -111,7 +111,7 @@ def getSpreadSizeByProbability(G, Ew, S):
 def getDifferentSeedSpread(G, Ew, K):
     BestSpreadSize = 0
     BestSeedSet = []
-    BestSeedSet=celfpp(G,K)
+    BestSeedSet=list(celfpp(G,Ew,K))
     BestSpreadSize=getSpreadSizeByProbability(G, Ew, BestSeedSet)
     return BestSpreadSize, BestSeedSet
 
@@ -126,7 +126,7 @@ class LinearThreshold(object):
     def __init__(self, graph):
         self.graph = graph
         self.neighborhood_fn = self.graph.neighbors if isinstance(self.graph, nx.Graph) else self.graph.predecessors
-    
+        
     def sample_node_thresholds_mc(self, mc):
             self.sampled_thresholds = np.random.uniform(size=(mc, len(self.graph.nodes)))
 
@@ -134,16 +134,22 @@ class LinearThreshold(object):
         for idx, node in enumerate(self.graph.nodes):
             self.graph.nodes[node]['threshold'] = self.sampled_thresholds[mcount][idx]
 
-    def diffusion_iter(self):
+    def diffusion_iter(self,ew):
         for node in self.graph.nodes:
             if self.graph.nodes[node]['is_active']:
                 continue
             neighbors = self.neighborhood_fn(node)
-            weights = sum(self.graph.edges[neighbor, node]['weight'] for neighbor in neighbors)
+            
+            #weights = sum(self.graph.edges[neighbor, node]['weight'] 
+            #            for neighbor in neighbors if self.graph.has_edge(neighbor, node))
+            weights = 0
+            for parentEdge in self.graph.in_edges(node):
+                weights += ew[parentEdge] 
+            #weights = sum(ew[self.graph.in_edges(node)])
             if weights > self.graph.nodes[node]['threshold']:
                 self.graph.nodes[node]['is_active'] = True
 
-    def diffuse(self, act_nodes, mcount):
+    def diffuse(self, act_nodes, mcount,ew):
         self.sample_node_thresholds(mcount)
         nx.set_node_attributes(self.graph, False, name='is_active')
 
@@ -153,31 +159,31 @@ class LinearThreshold(object):
         prev_active_nodes = set()
         active_nodes = set()
         while True:
-            self.diffusion_iter()
+            self.diffusion_iter(ew)
             prev_active_nodes = active_nodes
             active_nodes = set(i for i, v in self.graph.nodes(data=True) if v['is_active'])
             if active_nodes == prev_active_nodes:
                 break
         self.graph.total_activated_nodes.append(len(active_nodes))
 
-    def diffuse_mc(self, act_nodes, mc=50):
+    def diffuse_mc(self, act_nodes,ew, mc=50):
         self.sample_node_thresholds_mc(mc)
         self.graph.total_activated_nodes = []
         for i in range(mc):
-            self.diffuse(act_nodes, i)
+            self.diffuse(act_nodes, i,ew)
         return sum(self.graph.total_activated_nodes) / float(mc)
 
-    def shapely_iter(self, act_nodes):
+    def shapely_iter(self, act_nodes,ew):
         nx.set_node_attributes(self.graph, False, name='is_active')
 
         for node in act_nodes:
             self.graph.nodes[node]['is_active'] = True
 
-        self.diffusion_iter()
+        self.diffusion_iter(ew)
         active_nodes = [n for n, v in self.graph.nodes.data() if v['is_active']]
         return active_nodes
 
-    def shapely_diffuse(self, nodes, mc=50):
+    def shapely_diffuse(self, nodes,ew, mc=50):
         self.sample_node_thresholds_mc(mc)
         for node in nodes:
             self.graph.nodes[node]['tmp'] = 0
@@ -190,7 +196,7 @@ class LinearThreshold(object):
                 if i in active_nodes_with:
                     self.graph.nodes[node]['tmp'] = 0
                     continue
-                active_nodes_with = self.shapely_iter(nodes[:i+1])
-                active_nodes_without = self.shapely_iter(nodes[:i])
+                active_nodes_with = self.shapely_iter(nodes[:i+1],ew)
+                active_nodes_without = self.shapely_iter(nodes[:i],ew)
                 self.graph.nodes[nodes[i]]['tmp'] +=  len(active_nodes_with) - len(active_nodes_without)
 
