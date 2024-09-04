@@ -42,7 +42,7 @@ class simulateOnlineData:
             self.AlgRegret[alg_name] = []
 
         self.resultRecord()
-        BestSeedSet = self.oracle(self.G, self.EwTrue, self.seed_size)
+        BestSeedSet = self.oracle(self.G, self.EwTrue, self.seed_size)#ここだけは厳密解の必要あり？
         BestSpreadSize = self.calculate_exact_spreadsize(self.G, self.EwTrue, BestSeedSet)
 
         for iter_ in range(self.iterationTime):
@@ -83,6 +83,7 @@ class simulateOnlineData:
                 self.AlgLoss[alg_name].append(alg.getLoss()[-1])
 
             self.resultRecord(iter_)
+            self.recordBestSeedSet(BestSeedSet, reward)
         print("No", iter_, ":Average Oracle Reward", BestSpreadSize)
         print("Best Seed Set", BestSeedSet)
 
@@ -143,6 +144,16 @@ class simulateOnlineData:
             with open(self.filenameWriteElapsedTime, 'a+') as f:
                 f.write(f'{iter_},{elapsed_time}\n')
 
+    def recordBestSeedSet(self, BestSeedSet, reward):
+        timeRun = self.startTime.strftime('_%m_%d_%H_%M_%S')
+        fileSig = '_seedsize' + str(self.seed_size) + '_iter' + str(self.iterationTime) + '_' + self.dataset + "_RandomSeed" + str(self.RandomSeed)
+        
+        filenameBestSeedSet = os.path.join(save_address, 'BestSeedSet/BestSeedSet' + timeRun + fileSig + '.csv')
+        os.makedirs(os.path.dirname(filenameBestSeedSet), exist_ok=True)
+        
+        with open(filenameBestSeedSet, 'w') as f:
+            f.write('BestSeedSet,BestSpreadSize\n')
+            f.write(f'{BestSeedSet},{reward}\n')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
