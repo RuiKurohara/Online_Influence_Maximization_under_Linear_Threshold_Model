@@ -10,6 +10,7 @@ import Oracle.EnumerateSeedsToGetHighestExpectation
 import Oracle.BinaryOracle
 import Oracle.EnumerateSeedsToGetHighestExpectation_GA
 import Oracle.EnumerateSeedsToGetHighestExpectation_new
+import Oracle.diffusion
 from Tool.create_save_path import *
 from BanditAlg.OIM_ETC import OIM_ETC_Algorithm
 from BanditAlg.IMLinUCB_LT import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS

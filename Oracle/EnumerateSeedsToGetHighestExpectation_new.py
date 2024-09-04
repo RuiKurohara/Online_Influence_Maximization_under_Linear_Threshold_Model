@@ -1,7 +1,9 @@
 import numpy as np
 from itertools import combinations
 import datetime
-import diffusion
+#import diffusion
+import networkx as nx
+from tqdm.autonotebook import tqdm
 from heapdict import heapdict
 
 class Node(object):
@@ -13,7 +15,7 @@ class Node(object):
         self.flag = None
         self.list_index = 0
 
-def celfpp(graph, diffuse, k):
+def celfpp(graph, k):
     S = set()
     # Note that heapdict is min heap and hence add negative priorities for
     # it to work.
@@ -22,11 +24,14 @@ def celfpp(graph, diffuse, k):
     cur_best = None
     node_data_list = []
 
+    # LinearThreshold クラスのインスタンスを作成
+    lt_model = LinearThreshold(graph)
+
     for node in graph.nodes:
         node_data = Node(node)
-        node_data.mg1 = diffuse.diffuse_mc([node])
+        node_data.mg1 = lt_model.diffuse_mc([node])
         node_data.prev_best = cur_best
-        node_data.mg2 = diffuse.diffuse_mc([node, cur_best.node]) if cur_best else node_data.mg1
+        node_data.mg2 = lt_model.diffuse_mc([node, cur_best.node]) if cur_best else node_data.mg1
         node_data.flag = 0
         cur_best = cur_best if cur_best and cur_best.mg1 > node_data.mg1 else node_data
         graph.nodes[node]['node_data'] = node_data
@@ -45,16 +50,16 @@ def celfpp(graph, diffuse, k):
         elif node_data.prev_best == last_seed:
             node_data.mg1 = node_data.mg2
         else:
-            before = diffuse.diffuse_mc(S)
+            before = lt_model.diffuse_mc(S)
             S.add(node_data.node)
-            after = diffuse.diffuse_mc(S)
+            after = lt_model.diffuse_mc(S)
             S.remove(node_data.node)
             node_data.mg1 = after - before
             node_data.prev_best = cur_best
             S.add(cur_best.node)
-            before = diffuse.diffuse_mc(S)
+            before = lt_model.diffuse_mc(S)
             S.add(node_data.node)
-            after = diffuse.diffuse_mc(S)
+            after = lt_model.diffuse_mc(S)
             S.remove(cur_best.node)
             if node_data.node != cur_best.node: S.remove(node_data.node)
             node_data.mg2 = after - before
@@ -103,10 +108,10 @@ def getSpreadSizeByProbability(G, Ew, S):
             SpreadSize = SpreadSize + getActivateProbabiltiyByDFS(G, S, Ew, u, visitOneHot, node2Index)
     return SpreadSize
 
-def getDifferentSeedSpread(G, Ew, K):#！！！時間かかる犯人！！！
+def getDifferentSeedSpread(G, Ew, K):
     BestSpreadSize = 0
     BestSeedSet = []
-    BestSeedSet=celfpp(G,diffusion,K)
+    BestSeedSet=celfpp(G,K)
     BestSpreadSize=getSpreadSizeByProbability(G, Ew, BestSeedSet)
     return BestSpreadSize, BestSeedSet
 
@@ -114,3 +119,78 @@ def Enumerate_oracle(G, Ew, K):
     BestSpreadSize, BestSeedSet = getDifferentSeedSpread(G, Ew, K)
     return BestSeedSet
 ### get Best S with DFS - END
+
+
+##diffusion
+class LinearThreshold(object):
+    def __init__(self, graph):
+        self.graph = graph
+        self.neighborhood_fn = self.graph.neighbors if isinstance(self.graph, nx.Graph) else self.graph.predecessors
+    
+    def sample_node_thresholds_mc(self, mc):
+            self.sampled_thresholds = np.random.uniform(size=(mc, len(self.graph.nodes)))
+
+    def sample_node_thresholds(self, mcount):
+        for idx, node in enumerate(self.graph.nodes):
+            self.graph.nodes[node]['threshold'] = self.sampled_thresholds[mcount][idx]
+
+    def diffusion_iter(self):
+        for node in self.graph.nodes:
+            if self.graph.nodes[node]['is_active']:
+                continue
+            neighbors = self.neighborhood_fn(node)
+            weights = sum(self.graph.edges[neighbor, node]['weight'] for neighbor in neighbors)
+            if weights > self.graph.nodes[node]['threshold']:
+                self.graph.nodes[node]['is_active'] = True
+
+    def diffuse(self, act_nodes, mcount):
+        self.sample_node_thresholds(mcount)
+        nx.set_node_attributes(self.graph, False, name='is_active')
+
+        for node in act_nodes:
+            self.graph.nodes[node]['is_active'] = True
+
+        prev_active_nodes = set()
+        active_nodes = set()
+        while True:
+            self.diffusion_iter()
+            prev_active_nodes = active_nodes
+            active_nodes = set(i for i, v in self.graph.nodes(data=True) if v['is_active'])
+            if active_nodes == prev_active_nodes:
+                break
+        self.graph.total_activated_nodes.append(len(active_nodes))
+
+    def diffuse_mc(self, act_nodes, mc=50):
+        self.sample_node_thresholds_mc(mc)
+        self.graph.total_activated_nodes = []
+        for i in range(mc):
+            self.diffuse(act_nodes, i)
+        return sum(self.graph.total_activated_nodes) / float(mc)
+
+    def shapely_iter(self, act_nodes):
+        nx.set_node_attributes(self.graph, False, name='is_active')
+
+        for node in act_nodes:
+            self.graph.nodes[node]['is_active'] = True
+
+        self.diffusion_iter()
+        active_nodes = [n for n, v in self.graph.nodes.data() if v['is_active']]
+        return active_nodes
+
+    def shapely_diffuse(self, nodes, mc=50):
+        self.sample_node_thresholds_mc(mc)
+        for node in nodes:
+            self.graph.nodes[node]['tmp'] = 0
+
+        for c in tqdm(range(mc), desc='Shapely Monte Carlo', leave=False):
+            self.sample_node_thresholds(c)
+            active_nodes_with = []
+            active_nodes_without = []
+            for i in tqdm(range(len(nodes)), desc='Shapely Nodes', leave=False):
+                if i in active_nodes_with:
+                    self.graph.nodes[node]['tmp'] = 0
+                    continue
+                active_nodes_with = self.shapely_iter(nodes[:i+1])
+                active_nodes_without = self.shapely_iter(nodes[:i])
+                self.graph.nodes[nodes[i]]['tmp'] +=  len(active_nodes_with) - len(active_nodes_without)
+
