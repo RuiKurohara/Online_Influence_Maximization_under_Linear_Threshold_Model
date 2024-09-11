@@ -42,7 +42,8 @@ class simulateOnlineData:
             self.AlgRegret[alg_name] = []
 
         self.resultRecord()
-        BestSeedSet = self.oracle(self.G, self.EwTrue, self.seed_size)#ここだけは厳密解の必要あり？
+        #BestSeedSet = self.oracle(self.G, self.EwTrue, self.seed_size)#ここだけは厳密解の必要あり？
+        BestSeedSet = Oracle.EnumerateSeedsToGetHighestExpectation.Enumerate_oracle(self.G, self.EwTrue, self.seed_size)
         BestSpreadSize = self.calculate_exact_spreadsize(self.G, self.EwTrue, BestSeedSet)
 
         for iter_ in range(self.iterationTime):
@@ -85,7 +86,7 @@ class simulateOnlineData:
             self.resultRecord(iter_)
             self.recordBestSeedSet(BestSeedSet, reward)
         print("No", iter_, ":Average Oracle Reward", BestSpreadSize)
-        print("Best Seed Set", BestSeedSet)
+        print("Best Seed Set", BestSeedSet)#表示しても意味ない？求めたいのは厳密解のシードセットではなく推定解のシードセット
 
     def resultRecord(self, iter_=None):
         if iter_ is None:
