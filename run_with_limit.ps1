@@ -8,7 +8,7 @@ for ($i = 1; $i -le $max_runs; $i++) {
     Write-Host "Run #$i"
     
     # Pythonスクリプトを実行
-    python Main.py --seed_size 3 --iterationTimes 500 --save_address SimulationResults/gaussian_25_celfpp_mc5_ER --G_address Datasets/ER_node25_p_0.2.G --weight_address Datasets/ER_node25_p_0.2EWTrue.dic --use_new_algorithm
+    python Main.py --seed_size 5 --iterationTimes 100 --save_address SimulationResults/gaussian_25_celfpp_mc3_ER --G_address Datasets/ER_node25_p_0.2.G --weight_address Datasets/ER_node25_p_0.2EWTrue.dic --use_new_algorithm
     
     Write-Host "Run #$i finished."
     

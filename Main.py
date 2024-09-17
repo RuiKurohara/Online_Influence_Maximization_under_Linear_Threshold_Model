@@ -42,8 +42,8 @@ class simulateOnlineData:
             self.AlgRegret[alg_name] = []
 
         self.resultRecord()
-        #BestSeedSet = self.oracle(self.G, self.EwTrue, self.seed_size)#ここだけは厳密解の必要あり？
-        BestSeedSet = Oracle.EnumerateSeedsToGetHighestExpectation.Enumerate_oracle(self.G, self.EwTrue, self.seed_size)
+        BestSeedSet = self.oracle(self.G, self.EwTrue, self.seed_size)#ここだけは厳密解の必要あり？
+        #BestSeedSet = Oracle.EnumerateSeedsToGetHighestExpectation.Enumerate_oracle(self.G, self.EwTrue, self.seed_size)
         BestSpreadSize = self.calculate_exact_spreadsize(self.G, self.EwTrue, BestSeedSet)
 
         for iter_ in range(self.iterationTime):
@@ -222,7 +222,7 @@ if __name__ == '__main__':
                                        dataset_name, RandomSeed)
     algorithms = {}
 
-    
+    """
     algorithms[LinUCB_algs_name] = IMLinUCB_LT_Algorithm(G, EwTrue, seed_size, iterationTimes, sigma, delta, oracle,
                                                          calculate_exact_spreadsize)
     """
@@ -230,5 +230,5 @@ if __name__ == '__main__':
         algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,
                                                                     budgetTime=budgetTime)
     #ETCとの比較しないときコメントアウト
-    """
+    
     simExperiment.runAlgorithms(algorithms=algorithms)

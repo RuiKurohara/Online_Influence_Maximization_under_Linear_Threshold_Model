@@ -92,7 +92,7 @@ def getActivateProbabiltiyByDFS(G, S, Ew, u, visitOneHot, node2Index):
 
 """
 n=20:0.001sくらい
-n=5:0.01sくらい
+n=1:0.01sくらい
 n=300で1.4sくらい
 """
 def getSpreadSizeByProbability(G, Ew, S):
@@ -166,7 +166,7 @@ class LinearThreshold(object):
                 break
         self.graph.total_activated_nodes.append(len(active_nodes))
 
-    def diffuse_mc(self, act_nodes,ew, mc=5):
+    def diffuse_mc(self, act_nodes,ew, mc=3):
         self.sample_node_thresholds_mc(mc)
         self.graph.total_activated_nodes = []
         for i in range(mc):
@@ -183,7 +183,7 @@ class LinearThreshold(object):
         active_nodes = [n for n, v in self.graph.nodes.data() if v['is_active']]
         return active_nodes
 
-    def shapely_diffuse(self, nodes,ew, mc=5):
+    def shapely_diffuse(self, nodes,ew, mc=3):
         self.sample_node_thresholds_mc(mc)
         for node in nodes:
             self.graph.nodes[node]['tmp'] = 0
