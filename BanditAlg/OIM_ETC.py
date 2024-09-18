@@ -24,10 +24,11 @@ class OIM_ETC_Algorithm:
 
     def decide(self):
         # S = []
-        #budgetがおおきいとこっち
+        #budget×node数より小さいときは探索
         if self.iterCounter < self.budgetTime*self.G.number_of_nodes():
             uToLearning = self.index2Node[self.iterCounter % self.G.number_of_nodes()]
             S = [uToLearning]  # one node as seed set
+        #
         else:
             S = self.oracle(self.G, self.EwHat, self.seedSize)#時間かかる
         norm1BetweenEwEstimate_EwTrue = 0

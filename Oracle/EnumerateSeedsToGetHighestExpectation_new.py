@@ -15,7 +15,7 @@ class Node(object):
         self.flag = None
         self.list_index = 0
 
-def celfpp(graph,ew, k):##重み付きに変更する必要あり
+def celfpp(graph,ew, k):
     S = set()
     # Note that heapdict is min heap and hence add negative priorities for
     # it to work.
@@ -72,7 +72,7 @@ def celfpp(graph,ew, k):##重み付きに変更する必要あり
 
     return S
 
-# get random weight
+# get random weight 使わない
 def getNextRandomWeight(weightLowerBound, weightUpperBound):
     weightNowPos = np.random.uniform(weightLowerBound, weightUpperBound)
     return weightNowPos
@@ -166,7 +166,7 @@ class LinearThreshold(object):
                 break
         self.graph.total_activated_nodes.append(len(active_nodes))
 
-    def diffuse_mc(self, act_nodes,ew, mc=3):
+    def diffuse_mc(self, act_nodes,ew, mc=50):
         self.sample_node_thresholds_mc(mc)
         self.graph.total_activated_nodes = []
         for i in range(mc):
@@ -183,7 +183,7 @@ class LinearThreshold(object):
         active_nodes = [n for n, v in self.graph.nodes.data() if v['is_active']]
         return active_nodes
 
-    def shapely_diffuse(self, nodes,ew, mc=3):
+    def shapely_diffuse(self, nodes,ew, mc=50):
         self.sample_node_thresholds_mc(mc)
         for node in nodes:
             self.graph.nodes[node]['tmp'] = 0

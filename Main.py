@@ -56,15 +56,15 @@ class simulateOnlineData:
                 print("decide_time",datetime.datetime.now()-start_decide)
 
                 # 2. get live_edge/node from LT
-                # observe edge level feedback
+                # observe edge level feedback 神様視点
                 start_sim=datetime.datetime.now()
                 print("2. Simulate Influence Spreading on LT")
-                reward, finalInfluencedNodeList, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore = LT.LT.runLT_NodeFeedback(
+                rewardTrue, finalInfluencedNodeList, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore = LT.LT.runLT_NodeFeedback(
                     G, S, EwTrue)
-                print("Simulated Result: size is", reward)
+                print("Simulated Result: size is", rewardTrue)
                 print("sim_time",datetime.datetime.now()-start_sim)
 
-                # 2 get Reward
+                # 2 get Reward　観測できる
                 start_reward=datetime.datetime.now()
                 print("2. Get Expectation Reward of Algs Seeds")
                 reward = self.calculate_exact_spreadsize(self.G, self.EwTrue, S)
@@ -168,7 +168,7 @@ if __name__ == '__main__':
     parser.add_argument("--G_address", type=str, default="Datasets/ER_node9_p_0.2.G", help="")
     parser.add_argument("--weight_address", type=str, default="Datasets/ER_node9_p_0.2EWTrue.dic", help="")
     parser.add_argument("--LinUCB_algs_name", type=str, default="LT-LinUCB", help="")
-    parser.add_argument("--budgetList", nargs='*', default=[2, 5, 10, 20, 50, 100, 200])
+    parser.add_argument("--budgetList", nargs='*', default=[2, 5, 10, 20, 50,100, 200])
     args = parser.parse_args()
     budgetList = []
     for budget_each in args.budgetList:
@@ -222,10 +222,10 @@ if __name__ == '__main__':
                                        dataset_name, RandomSeed)
     algorithms = {}
 
-    """
+    
     algorithms[LinUCB_algs_name] = IMLinUCB_LT_Algorithm(G, EwTrue, seed_size, iterationTimes, sigma, delta, oracle,
                                                          calculate_exact_spreadsize)
-    """
+    
     for budgetTime in budgetList:
         algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,
                                                                     budgetTime=budgetTime)
