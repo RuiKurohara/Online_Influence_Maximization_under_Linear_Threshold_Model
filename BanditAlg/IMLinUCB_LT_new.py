@@ -42,7 +42,7 @@ class IMLinUCB_LT_Algorithm:
         else:
             T = self.iterationTime
         c = (np.sqrt(m * np.log(1 + T * n) + 2 * np.log(T * (n + 1 - self.seed_size))) + np.sqrt(n)) ** 2
-        c = c * self.scaleCRatio
+        c = c * self.scaleCRatio#信頼集合
         epsilon = 1 / np.sqrt(self.iterationTime)
 
         S, EwEstimated = Oracle.IMLinUCB_Oracle(

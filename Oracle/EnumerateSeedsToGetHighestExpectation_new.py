@@ -146,7 +146,7 @@ class LinearThreshold(object):
             for parentEdge in self.graph.in_edges(node):
                 weights += ew[parentEdge] 
             #weights = sum(ew[self.graph.in_edges(node)])
-            if weights > self.graph.nodes[node]['threshold']:#!!!threshould変更の必要あり？
+            if weights > self.graph.nodes[node]['threshold']:#!!!threshould変更の必要あり？なさげ？
                 self.graph.nodes[node]['is_active'] = True
 
     def diffuse(self, act_nodes, mcount,ew):

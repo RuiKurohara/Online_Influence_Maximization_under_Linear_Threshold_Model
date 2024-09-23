@@ -13,6 +13,7 @@ import Oracle.EnumerateSeedsToGetHighestExpectation_new
 import Oracle.diffusion
 from Tool.create_save_path import *
 from BanditAlg.OIM_ETC import OIM_ETC_Algorithm
+from BanditAlg.OIM_AETC import OIM_AETC_Algorithm
 from BanditAlg.IMLinUCB_LT import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS
 from BanditAlg.IMLinUCB_LT_new import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS_new  # 新しいアルゴリズム
 from BanditAlg.IMLinUCB_LT_GA import IMLinUCB_LT_Algorithm_GA as IMLinUCB_LT_Algorithm_TS_GA  # GAアルゴリズム
@@ -20,9 +21,10 @@ from BanditAlg.IMLinUCB_LT_little_V_binary_2d import IMLinUCB_LT_Algorithm as IM
 
 
 class simulateOnlineData:
-    def __init__(self, G, EwTrue, seed_size, oracle, calculate_exact_spreadsize, iterationTime, dataset, RandomSeed):
+    def __init__(self, G, EwTrue, lv, seed_size, oracle, calculate_exact_spreadsize, iterationTime, dataset, RandomSeed):
         self.G = G
         self.EwTrue = EwTrue  # True weight
+        self.lv = lv #ノードの閾値
         self.seed_size = seed_size
         self.oracle = oracle
         self.calculate_exact_spreadsize = calculate_exact_spreadsize
@@ -60,7 +62,7 @@ class simulateOnlineData:
                 start_sim=datetime.datetime.now()
                 print("2. Simulate Influence Spreading on LT")
                 rewardTrue, finalInfluencedNodeList, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore = LT.LT.runLT_NodeFeedback(
-                    G, S, EwTrue)
+                    G, S, EwTrue, lv)
                 print("Simulated Result: size is", rewardTrue)
                 print("sim_time",datetime.datetime.now()-start_sim)
 
@@ -205,6 +207,9 @@ if __name__ == '__main__':
     dataset_name = args.dataset_name
     G = pickle.load(open(args.G_address, 'rb'), encoding='latin1')
     EwTrue = pickle.load(open(args.weight_address, 'rb'), encoding='latin1')
+    lv = dict()  # threshold for nodes
+    for u in G.nodes:
+        lv[u] = random.random()
     LinUCB_algs_name = args.LinUCB_algs_name
     sigma = 1
     delta = 0.1
@@ -218,11 +223,11 @@ if __name__ == '__main__':
     print("Num of nodes", len(G.nodes))
     print("Num of edges", len(G.in_edges))
 
-    simExperiment = simulateOnlineData(G, EwTrue, seed_size, oracle, calculate_exact_spreadsize, iterationTimes,
+    simExperiment = simulateOnlineData(G, EwTrue, lv, seed_size, oracle, calculate_exact_spreadsize, iterationTimes,
                                        dataset_name, RandomSeed)
     algorithms = {}
 
-    
+    """
     algorithms[LinUCB_algs_name] = IMLinUCB_LT_Algorithm(G, EwTrue, seed_size, iterationTimes, sigma, delta, oracle,
                                                          calculate_exact_spreadsize)
     
@@ -230,5 +235,6 @@ if __name__ == '__main__':
         algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,
                                                                     budgetTime=budgetTime)
     #ETCとの比較しないときコメントアウト
-    
+    """
+    algorithms['AETC'] = OIM_AETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes)
     simExperiment.runAlgorithms(algorithms=algorithms)

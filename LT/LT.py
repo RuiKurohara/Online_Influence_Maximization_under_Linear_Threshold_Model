@@ -47,7 +47,7 @@ def checkLT(G, Ew, eps = 1e-4):
             return 'For node %s LT property is incorrect. Sum equals to %s' %(u, total)
     return True
 
-def runLT(G, S, Ew):
+def runLT(G, S, Ew, lv):
     '''
     Input: G -- networkx directed graph
     S -- initial seed set of nodes
@@ -62,9 +62,11 @@ def runLT(G, S, Ew):
     assert type(Ew) == dict, 'Infleunce edge weights Ew should be an instance of dict'
 
     T = deepcopy(S)  # targeted set
+    #もともとは毎回ランダムにノードの閾値を変える 固定の場合はコメントアウト
     lv = dict()  # threshold for nodes
     for u in G:
         lv[u] = random.random()
+    
     W = dict(zip(G.nodes(), [0]*len(G)))  # weighted number of activated in-neighbors
 
     Sj = deepcopy(S)  # For Extension
@@ -81,7 +83,7 @@ def runLT(G, S, Ew):
 
     return T
 
-def runLT_NodeFeedback(G, S, Ew):
+def runLT_NodeFeedback(G, S, Ew ,lv):
     '''
     Input: G -- networkx directed graph
     S -- initial seed set of nodes
@@ -105,6 +107,7 @@ def runLT_NodeFeedback(G, S, Ew):
         ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore[u] = []  # The previous activation of all seed nodes
 
     T = deepcopy(S)  # targeted set: The node that is finally activated
+    
     lv = dict()  # threshold for nodes
     for u in G:
         lv[u] = random.random()
@@ -139,12 +142,12 @@ def runLT_NodeFeedback(G, S, Ew):
     reward = len(T)
     return reward, T, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore
 
-def avgLT(G, S, Ew, iterations):
+def avgLT(G, S, Ew, lv, iterations):
     avgSize = 0
     progress = 1
     for i in range(iterations):
         if i == round(iterations*.1*progress) - 1:
             progress += 1
-        T = runLT(G, S, Ew)
+        T = runLT(G, S, Ew ,lv)
         avgSize += len(T)/iterations  # average diffusion results
     return avgSize
