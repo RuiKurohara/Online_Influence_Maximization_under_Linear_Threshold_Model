@@ -13,7 +13,7 @@ import Oracle.EnumerateSeedsToGetHighestExpectation_new
 import Oracle.diffusion
 from Tool.create_save_path import *
 from BanditAlg.OIM_ETC import OIM_ETC_Algorithm
-from BanditAlg.OIM_AETC import OIM_AETC_Algorithm
+from BanditAlg.OIM_AETC_vol02 import OIM_AETC_Algorithm
 from BanditAlg.IMLinUCB_LT import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS
 from BanditAlg.IMLinUCB_LT_new import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS_new  # 新しいアルゴリズム
 from BanditAlg.IMLinUCB_LT_GA import IMLinUCB_LT_Algorithm_GA as IMLinUCB_LT_Algorithm_TS_GA  # GAアルゴリズム

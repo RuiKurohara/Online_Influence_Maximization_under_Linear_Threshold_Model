@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 class OIM_AETC_Algorithm:
     def __init__(self, G, EwTrue, seedSize, oracle, iterationTime, delta=0.1):
@@ -18,6 +19,7 @@ class OIM_AETC_Algorithm:
 
     
         self.XactivatedCounter = {}
+        self.sum_XactivatedCounter = 0
         self.EwHat = {}
         for edge in self.G.in_edges():
             self.XactivatedCounter[edge] = 0
@@ -29,6 +31,7 @@ class OIM_AETC_Algorithm:
         self.estimated_mean = {node: float('-inf') for node in self.G.nodes()}
         self.upper_bound = {node: float('inf') for node in self.G.nodes()}
         self.lower_bound = {node: float('-inf') for node in self.G.nodes()}
+        self.end_explore = {node: False for node in self.G.nodes()}#終了条件　すべてが負の数になったら終了
 
         # 探索フェーズが終了したかどうかを示すフラグ
         self.explore_phase = True
@@ -39,6 +42,7 @@ class OIM_AETC_Algorithm:
         if self.iterCounter < self.G.number_of_nodes():
             uToLearning = self.index2Node[self.iterCounter % self.G.number_of_nodes()]
             S = [uToLearning]  # 探索する1つのノードをシードセットとして選択
+
         elif self.explore_phase:
             # 探索フェーズ: 各ノードを順番に選択し、シードセットを作成
             uToLearning = self.index2Node[self.iterCounter % self.G.number_of_nodes()]
@@ -46,13 +50,23 @@ class OIM_AETC_Algorithm:
 
             # 動的に探索フェーズを終了する条件
             
+            print(self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning])
+            print(self.end_explore)
+            print(all(self.end_explore.values()))
+            if self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] < 0:
+                self.end_explore[uToLearning] = True
+            if all(self.end_explore.values()):
+                self.explore_phase = False  # 探索フェーズ終了
+                self.endCount = self.iterCounter
+                # 活用フェーズに移行'
+            '''
             for node in self.G.nodes():
                 #if (self.upper_bound[edge] - self.lower_bound[edge]) < self.delta:
                 #print(self.upper_bound[edge])
                 if self.upper_bound[node] < self.estimated_mean[node]:
                     #self.explore_phase = False  # 探索フェーズ終了
                     self.endCount = self.iterCounter
-                    break  # 活用フェーズに移行
+                    break  # 活用フェーズに移行'''
 
         elif not self.explore_phase:
             # 活用フェーズ: oracle関数を用いて最良のシードセットを決定
@@ -82,15 +96,15 @@ class OIM_AETC_Algorithm:
                     # uからの影響がvに及んでいる場合にカウンタを更新
                     if len(attemptingActivateInNodeDir[v]) == 1:
                         self.XactivatedCounter[edge] += 1
+                        self.sum_XactivatedCounter += 1
             
             # エッジの上限・下限の更新
             estimatade_sum=0
             for edge in self.G.out_edges(uToLearning):
                 estimatade_sum += self.XactivatedCounter[edge]
             self.estimated_mean[uToLearning] = estimatade_sum / self.pulls[uToLearning]#値大き目調整必要
-            #print(self.iterCounter)
-            #print(self.pulls[edge])
-            self.upper_bound[uToLearning] = np.sqrt((2 * np.log(self.iterCounter)) / self.pulls[uToLearning])
+            #self.upper_bound[uToLearning] = np.sqrt((2 * np.log(self.iterCounter)) / self.pulls[uToLearning])
+            self.upper_bound[uToLearning] =self.sum_XactivatedCounter /sum(self.pulls)
             print(self.estimated_mean[uToLearning])
             print(self.upper_bound[uToLearning])
             
