@@ -29,6 +29,7 @@ class OIM_AETC_Algorithm:
         self.delta = delta
         self.pulls = {node: 0 for node in self.G.nodes()}
         self.estimated_mean = {node: float('-inf') for node in self.G.nodes()}
+        self.max_estimated_mean = float('-inf')
         self.upper_bound = {node: float('inf') for node in self.G.nodes()}
         self.lower_bound = {node: float('-inf') for node in self.G.nodes()}
         self.end_explore = {node: False for node in self.G.nodes()}#終了条件　すべてが負の数になったら終了
@@ -49,13 +50,15 @@ class OIM_AETC_Algorithm:
             S = [uToLearning]  # 探索する1つのノードをシードセットとして選択
 
             # 動的に探索フェーズを終了する条件
-            
-            print(self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning])
-            print(self.end_explore)
-            print(all(self.end_explore.values()))
-            if self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] < 0:
+            if self.upper_bound[uToLearning] == self.estimated_mean[uToLearning]:
+                self.end_explore[uToLearning] = False
+            elif self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] < 0:
+                print(self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning])
                 self.end_explore[uToLearning] = True
-            if all(self.end_explore.values()):
+            
+            #print(self.end_explore)
+            #print(all(self.end_explore.values()))
+            if list(self.end_explore.values()).count(False) == 1:
                 self.explore_phase = False  # 探索フェーズ終了
                 self.endCount = self.iterCounter
                 # 活用フェーズに移行'
@@ -102,9 +105,12 @@ class OIM_AETC_Algorithm:
             estimatade_sum=0
             for edge in self.G.out_edges(uToLearning):
                 estimatade_sum += self.XactivatedCounter[edge]
-            self.estimated_mean[uToLearning] = estimatade_sum / self.pulls[uToLearning]#値大き目調整必要
+            self.estimated_mean[uToLearning] = estimatade_sum / self.pulls[uToLearning]
+            if self.estimated_mean[uToLearning] > self.max_estimated_mean:
+                self.max_estimated_mean = self.estimated_mean[uToLearning]
             #self.upper_bound[uToLearning] = np.sqrt((2 * np.log(self.iterCounter)) / self.pulls[uToLearning])
-            self.upper_bound[uToLearning] =self.sum_XactivatedCounter /sum(self.pulls)
+            #self.upper_bound[uToLearning] =self.sum_XactivatedCounter /sum(self.pulls)
+            self.upper_bound[uToLearning] = self.max_estimated_mean
             print(self.estimated_mean[uToLearning])
             print(self.upper_bound[uToLearning])
             

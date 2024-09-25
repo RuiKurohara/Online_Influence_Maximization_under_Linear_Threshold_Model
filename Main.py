@@ -13,6 +13,7 @@ import Oracle.EnumerateSeedsToGetHighestExpectation_new
 import Oracle.diffusion
 from Tool.create_save_path import *
 from BanditAlg.OIM_ETC import OIM_ETC_Algorithm
+from BanditAlg.OIM_ETC_light import OIM_ETC_Algorithm_light
 from BanditAlg.OIM_AETC_vol02 import OIM_AETC_Algorithm
 from BanditAlg.IMLinUCB_LT import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS
 from BanditAlg.IMLinUCB_LT_new import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS_new  # 新しいアルゴリズム
@@ -230,11 +231,11 @@ if __name__ == '__main__':
     """
     algorithms[LinUCB_algs_name] = IMLinUCB_LT_Algorithm(G, EwTrue, seed_size, iterationTimes, sigma, delta, oracle,
                                                          calculate_exact_spreadsize)
-    
+    """
     for budgetTime in budgetList:
-        algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,
+        algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm_light(G, EwTrue, seed_size, oracle, iterationTimes,
                                                                     budgetTime=budgetTime)
     #ETCとの比較しないときコメントアウト
-    """
+    
     algorithms['AETC'] = OIM_AETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes)
     simExperiment.runAlgorithms(algorithms=algorithms)
