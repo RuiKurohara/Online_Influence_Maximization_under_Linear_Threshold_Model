@@ -13,6 +13,8 @@ class OIM_AETC_Algorithm:
         self.iterCounter = 1  # 現在のイテレーション数
         self.isFirst_commit = True
         self.estimated_S ={}
+        self.skipCounter = 0 #必要数カウントしたら飛ばす用
+        self.initial_explore = 1
 
         # ノードインデックスのマッピング
         self.index2Node = []
@@ -42,19 +44,24 @@ class OIM_AETC_Algorithm:
         self.endCount = 0
 
     def decide(self):
-        if self.iterCounter < self.G.number_of_nodes():
+        if self.iterCounter < self.G.number_of_nodes() * self.initial_explore:
             uToLearning = self.index2Node[self.iterCounter % self.G.number_of_nodes()]
             S = [uToLearning]  # 探索する1つのノードをシードセットとして選択
 
         elif self.explore_phase:
             # 探索フェーズ: 各ノードを順番に選択し、シードセットを作成
-            uToLearning = self.index2Node[self.iterCounter % self.G.number_of_nodes()]
-            S = [uToLearning]  # 探索する1つのノードをシードセットとして選択
+            self.skipCounter = 0
+            while True:
+                uToLearning = self.index2Node[(self.iterCounter + self.skipCounter) % self.G.number_of_nodes()]
+                S = [uToLearning]  # 探索する1つのノードをシードセットとして選択
+                if self.end_explore[uToLearning] == False:#探索終了でなければbreak
+                    break
+                self.skipCounter += 1
 
             # 動的に探索フェーズを終了する条件
             if self.upper_bound[uToLearning] == self.estimated_mean[uToLearning]:
                 self.end_explore[uToLearning] = False
-            elif self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] < 0:
+            elif self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] - self.initial_explore < 0:
                 print(self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning])
                 self.end_explore[uToLearning] = True
             

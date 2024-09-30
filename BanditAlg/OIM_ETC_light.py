@@ -21,8 +21,8 @@ class OIM_ETC_Algorithm_light:
         for edge in self.G.in_edges():
             self.XactivatedCounter[edge] = 0
             self.EwHat[edge] = 0
-            self.isFirst_commit = True
-            self.estimated_S ={}
+        self.isFirst_commit = True
+        self.estimated_S ={}
 
 
     def decide(self):
