@@ -19,7 +19,7 @@ AlgName_2_NewNameColorLinestyle = {
     "AETC":("AETC", "red", "--"),
 }
 
-fileFolderSum = '../SimulationResults/gaussian_25_AETC_10000_ER'
+fileFolderSum = '../SimulationResults/gaussian_25_AETC_10000_v1_ER'
 fileFolderForRead = fileFolderSum + '/Reward'
 fileFolderToSave = fileFolderSum + '/Reward'
 drawType = "Average"  # "Cumulative" "Average" "Default"

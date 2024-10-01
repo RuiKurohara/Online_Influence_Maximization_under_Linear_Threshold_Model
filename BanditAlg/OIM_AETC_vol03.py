@@ -61,8 +61,8 @@ class OIM_AETC_Algorithm:
             # 動的に探索フェーズを終了する条件
             if self.upper_bound[uToLearning] == self.estimated_mean[uToLearning]:
                 self.end_explore[uToLearning] = False
-            elif self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] - self.initial_explore < 0:
-                print(self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning])
+            elif math.log(self.seedSize*self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] - self.initial_explore < 0:
+                print(math.log(self.seedSize*self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning])
                 self.end_explore[uToLearning] = True
             
             #print(self.end_explore)
