@@ -5,7 +5,7 @@ import time
 import random
 import numpy as np
 import datetime
-import LT.LT
+import IC.IC
 import Oracle.EnumerateSeedsToGetHighestExpectation
 import Oracle.BinaryOracle
 import Oracle.EnumerateSeedsToGetHighestExpectation_GA
@@ -14,7 +14,7 @@ import Oracle.diffusion
 from Tool.create_save_path import *
 from BanditAlg.OIM_ETC import OIM_ETC_Algorithm
 from BanditAlg.OIM_ETC_light import OIM_ETC_Algorithm_light
-from BanditAlg.OIM_AETC_vol02 import OIM_AETC_Algorithm
+from BanditAlg.OIM_AETC_vol03 import OIM_AETC_Algorithm
 from BanditAlg.IMLinUCB_LT import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS
 from BanditAlg.IMLinUCB_LT_new import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_TS_new  # 新しいアルゴリズム
 from BanditAlg.IMLinUCB_LT_GA import IMLinUCB_LT_Algorithm_GA as IMLinUCB_LT_Algorithm_TS_GA  # GAアルゴリズム
@@ -58,11 +58,11 @@ class simulateOnlineData:
                 print("seed set", S)  # list
                 print("decide_time",datetime.datetime.now()-start_decide)
 
-                # 2. get live_edge/node from LT
+                # 2. get live_edge/node from IC
                 # observe edge level feedback 神様視点
                 start_sim=datetime.datetime.now()
-                print("2. Simulate Influence Spreading on LT")
-                rewardTrue, finalInfluencedNodeList, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore = LT.LT.runLT_NodeFeedback(
+                print("2. Simulate Influence Spreading on IC")
+                rewardTrue, finalInfluencedNodeList, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore = IC.IC.runIC_NodeFeedback(
                     G, S, EwTrue, lv)
                 print("Simulated Result: size is", rewardTrue)
                 print("sim_time",datetime.datetime.now()-start_sim)

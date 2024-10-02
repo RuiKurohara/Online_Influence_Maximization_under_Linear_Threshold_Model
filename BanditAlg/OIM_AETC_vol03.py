@@ -33,6 +33,7 @@ class OIM_AETC_Algorithm:
         self.delta = delta
         self.pulls = {node: 0 for node in self.G.nodes()}
         self.estimated_mean = {node: float('-inf') for node in self.G.nodes()}
+        self.estimated_mean_st = {node: float('-inf') for node in self.G.nodes()}
         self.max_estimated_mean = float('-inf')
         self.upper_bound = {node: float('inf') for node in self.G.nodes()}
         self.lower_bound = {node: float('-inf') for node in self.G.nodes()}
@@ -61,8 +62,9 @@ class OIM_AETC_Algorithm:
             # 動的に探索フェーズを終了する条件
             if self.upper_bound[uToLearning] == self.estimated_mean[uToLearning]:
                 self.end_explore[uToLearning] = False
-            elif math.log(self.seedSize*self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] - self.initial_explore < 0:
-                print(math.log(self.seedSize*self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning])
+            #elif math.log(self.seedSize*self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] - self.initial_explore < 0:
+            elif self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1)-self.pulls[uToLearning] - self.initial_explore < 0:
+                print(self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1)-self.pulls[uToLearning])
                 self.end_explore[uToLearning] = True
             
             #print(self.end_explore)
@@ -104,7 +106,7 @@ class OIM_AETC_Algorithm:
                          ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore):
         # 探索フェーズ中のパラメータ更新
         if self.explore_phase:
-            uToLearning = self.index2Node[self.iterCounter % self.G.number_of_nodes()]
+            uToLearning = self.index2Node[(self.iterCounter + self.skipCounter) % self.G.number_of_nodes()]
             self.pulls[uToLearning] += 1
             # ノードuの全てのアウトゴーイングエッジの更新
             for edge in self.G.out_edges(uToLearning):
@@ -124,8 +126,9 @@ class OIM_AETC_Algorithm:
                 self.max_estimated_mean = self.estimated_mean[uToLearning]
             #self.upper_bound[uToLearning] = np.sqrt((2 * np.log(self.iterCounter)) / self.pulls[uToLearning])
             #self.upper_bound[uToLearning] =self.sum_XactivatedCounter /sum(self.pulls)
-            self.upper_bound[uToLearning] = self.max_estimated_mean
-            print(self.estimated_mean[uToLearning])
+            self.estimated_mean_st[uToLearning] = (self.estimated_mean[uToLearning] - np.mean(list(self.estimated_mean.values()))) / np.std(list(self.estimated_mean.values()))
+            self.upper_bound[uToLearning] = (self.max_estimated_mean- np.mean(list(self.estimated_mean.values()))) / np.std(list(self.estimated_mean.values()))
+            print(self.estimated_mean_st[uToLearning])
             print(self.upper_bound[uToLearning])
             
         # 探索が終了したら最良のエッジの推定値を確定
