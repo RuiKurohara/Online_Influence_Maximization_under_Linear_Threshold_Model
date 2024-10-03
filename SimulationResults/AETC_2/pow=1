@@ -1,0 +1,1 @@
+self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1)-self.pulls[uToLearning] - self.initial_explore < 0:
