@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 class OIM_AETC_Algorithm:
-    def __init__(self, G, EwTrue, seedSize, oracle, iterationTime, delta=0.1):
+    def __init__(self, G, EwTrue, seedSize, oracle, iterationTime, a, delta=0.1):
         # アルゴリズムのパラメータ初期化
         self.G = G
         self.EwTrue = EwTrue  # 正確なエッジの重み
@@ -15,6 +15,7 @@ class OIM_AETC_Algorithm:
         self.estimated_S ={}
         self.skipCounter = 0 #必要数カウントしたら飛ばす用
         self.initial_explore = 1
+        self.a = a#ハイパーパラメータ
 
         # ノードインデックスのマッピング
         self.index2Node = []
@@ -63,8 +64,8 @@ class OIM_AETC_Algorithm:
             if self.upper_bound[uToLearning] == self.estimated_mean[uToLearning]:
                 self.end_explore[uToLearning] = False
             #elif math.log(self.seedSize*self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] - self.initial_explore < 0:
-            elif math.sqrt(self.seedSize)*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1)-self.pulls[uToLearning] - self.initial_explore < 0:
-                print(math.sqrt(self.seedSize)*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1)-self.pulls[uToLearning])
+            elif self.a*self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1)-self.pulls[uToLearning] - self.initial_explore < 0:
+                print(self.a*self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1)-self.pulls[uToLearning])
                 self.end_explore[uToLearning] = True
             
             #print(self.end_explore)

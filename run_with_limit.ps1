@@ -14,7 +14,7 @@ foreach($seed_size in $seed_sizes){
             Write-Host "Run #$i"
             
             # Pythonスクリプトを実行
-            $command = "python Main.py --seed_size $seed_size --iterationTimes $iteration --save_address SimulationResults/AETC_2/gaussian_${node_num}_AETC_${iteration}_k${seed_size}_ER --G_address Datasets/ER_node${node_num}_p_0.2.G --weight_address Datasets/ER_node${node_num}_p_0.2EWTrue.dic"
+            $command = "python Main_optuna.py --seed_size $seed_size --iterationTimes $iteration --save_address SimulationResults/AETC_4/gaussian_${node_num}_AETC_${iteration}_k${seed_size}_ER --G_address Datasets/ER_node${node_num}_p_0.2.G --weight_address Datasets/ER_node${node_num}_p_0.2EWTrue.dic"
             
             Invoke-Expression $command
             Write-Host "Run #$i finished."
