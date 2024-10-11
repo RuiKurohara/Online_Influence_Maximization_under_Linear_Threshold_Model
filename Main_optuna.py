@@ -6,6 +6,8 @@ import random
 import numpy as np
 import datetime
 import optuna
+import matplotlib.pyplot as plt
+import DataPreProcessing.copyGraph_ramdomWeight
 import DataPreProcessing.makeWSGraph
 import LT.LT
 import DataPreProcessing
@@ -23,7 +25,7 @@ from BanditAlg.IMLinUCB_LT_new import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algor
 from BanditAlg.IMLinUCB_LT_GA import IMLinUCB_LT_Algorithm_GA as IMLinUCB_LT_Algorithm_TS_GA  # GAアルゴリズム
 from BanditAlg.IMLinUCB_LT_little_V_binary_2d import IMLinUCB_LT_Algorithm as IMLinUCB_LT_Algorithm_2d
 
-
+global start
 class simulateOnlineData:
     def __init__(self, G, EwTrue, lv, seed_size, oracle, calculate_exact_spreadsize, iterationTime, dataset, RandomSeed):
         self.G = G
@@ -91,6 +93,7 @@ class simulateOnlineData:
 
             self.resultRecord(iter_)
             self.recordBestSeedSet(BestSeedSet, reward)
+            self.recordExcutionTime()
         print("No", iter_, ":Average Oracle Reward", BestSpreadSize)
         print("Best Seed Set", BestSeedSet)#表示しても意味ない？求めたいのは厳密解のシードセットではなく推定解のシードセット
 
@@ -110,7 +113,7 @@ class simulateOnlineData:
         for iter_ in range(self.iterationTime):
             for alg_name, alg in list(algorithms.items()):
                 # 1. use Online Algs to decide seed
-                start_decide=datetime.datetime.now()
+                #start_decide=datetime.datetime.now()
                 #print("\n1. Get seed with Online Algs")
                 S, EwEstimated = alg.decide()
                 #print("seed set", S)  # list
@@ -118,10 +121,14 @@ class simulateOnlineData:
 
                 # 2. get live_edge/node from LT
                 # observe edge level feedback 神様視点
-                start_sim=datetime.datetime.now()
+                #start_sim=datetime.datetime.now()
                 #print("2. Simulate Influence Spreading on LT")
                 rewardTrue, finalInfluencedNodeList, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore = LT.LT.runLT_NodeFeedback(
                     G, S, EwTrue, lv)
+                """
+                rewardTrue, finalInfluencedNodeList, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore = LT.LT.runLT_NodeFeedback_train(
+                    G, S, EwTrue, lv)
+                """
                 #print("Simulated Result: size is", rewardTrue)
                 #print("sim_time",datetime.datetime.now()-start_sim)
 
@@ -131,10 +138,11 @@ class simulateOnlineData:
                 reward = self.calculate_exact_spreadsize(self.G, self.EwTrue, S)
                 #print("Expected Reward: size is", reward)
                 reward_avarege += reward
+                #print(reward)
                 #print("reward_time",datetime.datetime.now()-start_reward)
 
                 # 3. Update parameters A b
-                start_update=datetime.datetime.now()
+                #start_update=datetime.datetime.now()
                 #print("3. Update parameters A b")
                 alg.updateParameters(finalInfluencedNodeList, attemptingActivateInNodeDir,
                                      ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore)
@@ -212,6 +220,17 @@ class simulateOnlineData:
             f.write(f'{BestSeedSet},{reward}\n')
             f.write('Hyper Parameter Score\n')
             f.write(f'{study.best_params},{study.best_value}\n')
+    
+    def recordExcutionTime(self):
+        timeRun = self.startTime.strftime('_%m_%d_%H_%M_%S')
+        fileSig = '_ExcutionTime' + str(self.seed_size) + '_iter' + str(self.iterationTime) + '_' + self.dataset + "_RandomSeed" + str(self.RandomSeed)
+        
+        filenameTime = os.path.join(save_address, 'ExcutionTime/ExcutionTime' + timeRun + fileSig + '.csv')
+        os.makedirs(os.path.dirname(filenameTime), exist_ok=True)
+        
+        with open(filenameTime, 'w') as f:
+            f.write('Excution Time\n')
+            f.write(f'{datetime.datetime.now() - start}')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -227,6 +246,7 @@ if __name__ == '__main__':
     parser.add_argument("--LinUCB_algs_name", type=str, default="LT-LinUCB", help="")
     parser.add_argument("--budgetList", nargs='*', default=[2, 5, 10, 20, 50,100, 200])
     args = parser.parse_args()
+    start = datetime.datetime.now()#プログラムの総実行時間を調べる
     budgetList = []
     for budget_each in args.budgetList:
         budgetList.append(int(budget_each))
@@ -276,19 +296,37 @@ if __name__ == '__main__':
     random.seed(RandomSeed)
 
     #optuna
-    train_G,train_EW = DataPreProcessing.makeWSGraph.gen_WS_random(len(G.nodes),4,0.1)
-    simExperiment_train = simulateOnlineData(train_G, train_EW, lv, seed_size, oracle, calculate_exact_spreadsize, iterationTimes,
-                                       dataset_name, RandomSeed)
-   
+    train_G, train_EW = DataPreProcessing.copyGraph_ramdomWeight.copy_G_random(G)
+    simExperiment_train = simulateOnlineData(train_G, train_EW, lv, seed_size, oracle, calculate_exact_spreadsize, iterationTimes, dataset_name, RandomSeed)
+    #simExperiment_train = simulateOnlineData(G, EwTrue, lv, seed_size, oracle, calculate_exact_spreadsize, iterationTimes, dataset_name, RandomSeed)
+    # Optunaでa, bを最適化
     def objective(trial):
-        a = trial.suggest_float('a', 0, 1.5)  #ハイパーパラメータの集合を定義する
-        algorithms_train = {'AETC_train': OIM_AETC_Algorithm(train_G, train_EW, seed_size, oracle, iterationTimes, a)}
-        return  simExperiment_train.runAlgorithms_train(algorithms_train)                   #良し悪しを判断するメトリクスを返す
-    # 目的関数の最適化を実行する（ステップ2）
-    
-    study = optuna.create_study(direction="maximize")
-    study.optimize(objective, n_trials=10)
+        a = trial.suggest_float('a', 0, 10, step=0.1)  # ハイパーパラメータaの範囲を定義
+        b = trial.suggest_int('b', 1, 10)  # ハイパーパラメータbの範囲を定義
+        algorithms_train = {'AETC_train': OIM_AETC_Algorithm(train_G, train_EW, seed_size, oracle, iterationTimes, a, b)}
+        #algorithms_train = {'AETC_train': OIM_AETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes, a, b)}
+        return simExperiment_train.runAlgorithms_train(algorithms_train)  # メトリクスを返す
 
+    # Studyの作成
+    study = optuna.create_study(direction="maximize")
+
+    # 最初のa=0でbを変化させた試行をOptunaのキューに追加
+    for i in range(10):
+        study.enqueue_trial({'a': 0, 'b': i+1})
+
+    # Optunaの最適化を実行
+    study.optimize(objective, n_trials=50)  # 通常の最適化を実行
+    save_address_optuna =  os.path.join(save_address, 'optuna_plot')
+    # ディレクトリが存在しない場合は作成
+    os.makedirs(save_address_optuna, exist_ok=True)
+    # 現在の時間を取得し、ファイル名に使用
+    current_time = current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"optuna_plot_{current_time}.png"
+    plt.plot([trial.value for trial in study.trials])
+    plt.grid()
+    # フルパスを作成して画像を保存
+    full_path = os.path.join(save_address_optuna, file_name)
+    plt.savefig(full_path)  # 保存するファイルパスを指定
 
     print("Num of nodes", len(G.nodes))
     print("Num of edges", len(G.in_edges))
@@ -301,11 +339,13 @@ if __name__ == '__main__':
     algorithms[LinUCB_algs_name] = IMLinUCB_LT_Algorithm(G, EwTrue, seed_size, iterationTimes, sigma, delta, oracle,
                                                          calculate_exact_spreadsize)
     """
-    """
+    
     for budgetTime in budgetList:
         algorithms['budget=' + str(budgetTime)] = OIM_ETC_Algorithm_light(G, EwTrue, seed_size, oracle, iterationTimes,
                                                                     budgetTime=budgetTime)
     #ETCとの比較しないときコメントアウト
-    """
-    algorithms['AETC'] = OIM_AETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,study.best_params['a'])
+    
+    algorithms['AETC'] = OIM_AETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes,study.best_params['a'],study.best_params['b'])
+    algorithms['AETC_train'] = OIM_AETC_Algorithm(train_G, train_EW, seed_size, oracle, iterationTimes,study.best_params['a'],study.best_params['b'])
     simExperiment.runAlgorithms(algorithms=algorithms)
+    

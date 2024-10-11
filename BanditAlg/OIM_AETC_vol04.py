@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 class OIM_AETC_Algorithm:
-    def __init__(self, G, EwTrue, seedSize, oracle, iterationTime, a, delta=0.1):
+    def __init__(self, G, EwTrue, seedSize, oracle, iterationTime, a,b, delta=0.1):
         # アルゴリズムのパラメータ初期化
         self.G = G
         self.EwTrue = EwTrue  # 正確なエッジの重み
@@ -15,7 +15,9 @@ class OIM_AETC_Algorithm:
         self.estimated_S ={}
         self.skipCounter = 0 #必要数カウントしたら飛ばす用
         self.initial_explore = 1
-        self.a = a#ハイパーパラメータ
+        self.a = a#ハイパーパラメータ 係数
+        self.b = b#ハイパーパラメータ　初期実行回数
+        #self.c = c#ハイパーパラメータ　分子（ノード数）のべき数
 
         # ノードインデックスのマッピング
         self.index2Node = []
@@ -46,7 +48,7 @@ class OIM_AETC_Algorithm:
         self.endCount = 0
 
     def decide(self):
-        if self.iterCounter < self.G.number_of_nodes() * self.initial_explore:
+        if self.iterCounter < self.G.number_of_nodes() * self.b:
             uToLearning = self.index2Node[self.iterCounter % self.G.number_of_nodes()]
             S = [uToLearning]  # 探索する1つのノードをシードセットとして選択
 
@@ -64,8 +66,8 @@ class OIM_AETC_Algorithm:
             if self.upper_bound[uToLearning] == self.estimated_mean[uToLearning]:
                 self.end_explore[uToLearning] = False
             #elif math.log(self.seedSize*self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean[uToLearning],2)-self.pulls[uToLearning] - self.initial_explore < 0:
-            elif self.a*self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1)-self.pulls[uToLearning] - self.initial_explore < 0:
-                print(self.a*self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1)-self.pulls[uToLearning])
+            elif self.a*(self.seedSize*math.log(self.iterationTime)/(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning] + 0.01)) - self.pulls[uToLearning] < 0:
+                #print(self.a*self.seedSize*math.log(self.iterationTime)/pow(self.upper_bound[uToLearning]-self.estimated_mean_st[uToLearning],1) - self.pulls[uToLearning])
                 self.end_explore[uToLearning] = True
             
             #print(self.end_explore)
@@ -96,7 +98,7 @@ class OIM_AETC_Algorithm:
         norm1BetweenEwEstimate_EwTrue = 0
         for u, v in self.EwTrue:
             norm1BetweenEwEstimate_EwTrue += abs(self.EwHat[(u, v)] - self.EwTrue[(u, v)])
-        print("norm1BetweenEwEstimate_EwTrue", norm1BetweenEwEstimate_EwTrue)
+        #print("norm1BetweenEwEstimate_EwTrue", norm1BetweenEwEstimate_EwTrue)
         self.lossList.append(norm1BetweenEwEstimate_EwTrue)
 
         # 現在の推定値を返す
@@ -129,8 +131,8 @@ class OIM_AETC_Algorithm:
             #self.upper_bound[uToLearning] =self.sum_XactivatedCounter /sum(self.pulls)
             self.estimated_mean_st[uToLearning] = (self.estimated_mean[uToLearning] - np.mean(list(self.estimated_mean.values()))) / np.std(list(self.estimated_mean.values()))
             self.upper_bound[uToLearning] = (self.max_estimated_mean- np.mean(list(self.estimated_mean.values()))) / np.std(list(self.estimated_mean.values()))
-            print(self.estimated_mean_st[uToLearning])
-            print(self.upper_bound[uToLearning])
+            #print(self.estimated_mean_st[uToLearning])
+            #print(self.upper_bound[uToLearning])
             
         # 探索が終了したら最良のエッジの推定値を確定
         if not self.explore_phase:

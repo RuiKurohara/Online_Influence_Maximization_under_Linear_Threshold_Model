@@ -107,7 +107,6 @@ def runLT_NodeFeedback(G, S, Ew ,lv):
         ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore[u] = []  # The previous activation of all seed nodes
 
     T = deepcopy(S)  # targeted set: The node that is finally activated
-    
     lv = dict()  # threshold for nodes
     for u in G:
         lv[u] = random.random()
@@ -151,3 +150,63 @@ def avgLT(G, S, Ew, lv, iterations):
         T = runLT(G, S, Ew ,lv)
         avgSize += len(T)/iterations  # average diffusion results
     return avgSize
+
+
+#optuna用
+def runLT_NodeFeedback_train(G, S, Ew ,lv):
+    '''
+    Input: G -- networkx directed graph
+    S -- initial seed set of nodes
+    Ew -- influence weights of edges
+    NOTE: multiple k edges between nodes (u,v) are
+    considered as one node with weight k. For this reason
+    when u is activated the total weight of (u,v) = Ew[(u,v)]*k
+    '''
+
+    assert type(G) == nx.DiGraph, 'Graph G should be an instance of networkx.DiGraph'
+    assert type(S) == list, 'Seed set S should be an instance of list'
+    assert type(Ew) == dict, 'Infleunce edge weights Ew should be an instance of dict'
+    # attemptingActivateInNodeDir: Maintain a set of ingress nodes to activate for each node
+    # workedInNodeList: When the node is activated, it will not continue to accumulate, and will be added to the list matching T
+    # key, node, value: List of activated ingress points
+    # When accessing u in Sj, add to the list of all inactive nodes v
+    attemptingActivateInNodeDir = {}  #
+    workedInNodeList = {}
+    ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore = {}  # The node that is finally activated is in here. With the in edge of the activation at the previous moment。
+    for u in S:
+        ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore[u] = []  # The previous activation of all seed nodes
+
+    T = deepcopy(S)  # targeted set: The node that is finally activated
+    
+    #lv = dict()  # threshold for nodes
+    for u in G:
+        #lv[u] = random.random()
+        attemptingActivateInNodeDir[u] = []
+    W = dict(zip(G.nodes(), [0]*len(G)))  # weighted number of activated in-neighbors
+
+    Sj = deepcopy(S)
+    # print 'Initial set', Sj
+    while len(Sj):
+        # Each cycle is a spread
+        # print("Sj", Sj)
+        Snew = []
+
+        attemptingActivateInNodeDir_AMomentBefore = deepcopy(attemptingActivateInNodeDir)
+        for u in Sj:  # For the newly activated node u, mark all its child nodes
+            for v in G[u]:  # In the directed graph G, all outgoing edges v of u in Sj.
+                if v not in T:  # For v that has not been activated before
+                    # Add u to the list of nodes that intend to activate v
+                    # (because only v not in T, nodes that are not activated are counted, all counts until they are activated)
+
+                    attemptingActivateInNodeDir[v].append(u)
+
+                    W[v] += Ew[(u, v)] * G[u][v]['weight']
+                    if W[v] >= lv[v]:
+                        Snew.append(v)
+                        T.append(v)
+                        workedInNodeList[v] = attemptingActivateInNodeDir[v]  # Record the node that successfully activated v
+                        # When activating, record the node activated at the previous moment.
+                        ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore[v] = deepcopy(attemptingActivateInNodeDir_AMomentBefore[v])
+        Sj = deepcopy(Snew)
+    reward = len(T)
+    return reward, T, workedInNodeList, attemptingActivateInNodeDir, ActivateInNodeOfFinalInfluencedNodeListDir_AMomentBefore
