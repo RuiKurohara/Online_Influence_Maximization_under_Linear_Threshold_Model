@@ -19,11 +19,7 @@ def getActivateProbabiltiyByDFS(G, S, Ew, u, visitOneHot, node2Index):
                                    * getActivateProbabiltiyByDFS(G, S, Ew, parentEdge[0], visitOneHot, node2Index)
     return uActivateProbability
 
-"""
-n=20:0.001sくらい
-n=50:0.01sくらい
-n=300で1.4sくらい
-"""
+
 def getSpreadSizeByProbability(G, Ew, S):
     node2Index = {}
     index = 0

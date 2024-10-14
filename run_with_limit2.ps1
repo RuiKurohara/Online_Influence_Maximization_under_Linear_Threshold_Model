@@ -28,4 +28,4 @@ foreach($seed_size in $seed_sizes){
 }
 Write-Host "All $max_runs runs completed."
 
-#.\run_with_limit.ps1
+#.\run_with_limit.ps2

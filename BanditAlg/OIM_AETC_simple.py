@@ -1,22 +1,22 @@
 import numpy as np
 import math
-import DataPreProcessing.copyGraph_ramdomWeight
+import DataPreProcessing.copyGraph
 
 class OIM_AETC_Algorithm:
     def __init__(self, G, EwTrue, seedSize, oracle, iterationTime, a):
         # アルゴリズムのパラメータ初期化
         #self.G = G
         #self.EwTrue = EwTrue  # 正確なエッジの重み
-        self.G,  self.EwTrue = DataPreProcessing.copyGraph_ramdomWeight.copy_G_random(G)
+        self.G,  self.EwTrue = DataPreProcessing.copyGraph.copy_G_edgenum(G)
         self.seedSize = seedSize  # アームの数（シードセットのサイズ）
         self.iterationTime = iterationTime  # 合計イテレーション
         self.oracle = oracle
         self.lossList = []
-        self.iterCounter = 1  # 現在のイテレーション数
+        self.iterCounter = 0  # 現在のイテレーション数
         self.isFirst_commit = True
         self.estimated_S ={}
-        self.skipCounter = 0 #必要数カウントしたら飛ばす用
-        self.initial_explore = 1
+        #self.skipCounter = 0 #必要数カウントしたら飛ばす用
+        #self.initial_explore = 1
         self.a = a#ハイパーパラメータ 初期実行
         #self.b = b#ハイパーパラメータ　初期実行回数
         #self.c = c#ハイパーパラメータ　最高実行回数

@@ -4,7 +4,7 @@ import VisualizationTools.draw_parameter_loss
 import VisualizationTools.draw_Regret
 import VisualizationTools.draw_Reward_Folder
 
-round_to_plot = 1000
+round_to_plot = 5000
 Title = "(c)"
 
 DrawList = ["budget=2", "budget=5","budget=10", "budget=20", "budget=50","budget=100", "budget=200","AETC"]
@@ -19,7 +19,7 @@ AlgName_2_NewNameColorLinestyle = {
     "AETC":("AETC", "red", "--"),
 }
 
-fileFolderSum = '../SimulationResults/AETC_optuna_5/gaussian_25_AETC_1000_k4_ER'
+fileFolderSum = '../SimulationResults/AETC_optuna_simple3/gaussian_25_AETC_5000_k3_ER'
 fileFolderForRead = fileFolderSum + '/Reward'
 fileFolderToSave = fileFolderSum + '/Reward'
 drawType = "Average"  # "Cumulative" "Average" "Default"

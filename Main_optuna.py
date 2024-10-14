@@ -7,7 +7,7 @@ import numpy as np
 import datetime
 import optuna
 import matplotlib.pyplot as plt
-import DataPreProcessing.copyGraph_ramdomWeight
+import DataPreProcessing.copyGraph
 import DataPreProcessing.makeWSGraph
 import LT.LT
 import DataPreProcessing
@@ -296,7 +296,7 @@ if __name__ == '__main__':
     random.seed(RandomSeed)
 
     #optuna
-    train_G, train_EW = DataPreProcessing.copyGraph_ramdomWeight.copy_G_random(G)
+    train_G, train_EW = DataPreProcessing.copyGraph.copy_G_random(G)
     simExperiment_train = simulateOnlineData(train_G, train_EW, lv, seed_size, oracle, calculate_exact_spreadsize, iterationTimes, dataset_name, RandomSeed)
     #simExperiment_train = simulateOnlineData(G, EwTrue, lv, seed_size, oracle, calculate_exact_spreadsize, iterationTimes, dataset_name, RandomSeed)
     # Optunaでa, bを最適化
