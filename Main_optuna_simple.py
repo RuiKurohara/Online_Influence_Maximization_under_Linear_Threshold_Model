@@ -303,24 +303,45 @@ if __name__ == '__main__':
     #simExperiment_train = simulateOnlineData(G, EwTrue, lv, seed_size, oracle, calculate_exact_spreadsize, iterationTimes, dataset_name, RandomSeed)
     # Optunaでa, bを最適化
     a_max = int((iterationTimes/len(G.nodes))*0.3)#反復回数の30%探索が最大探索回数
+    import optuna
+
     def objective(trial):
         a = trial.suggest_int('a', 1, a_max)  # ハイパーパラメータaの範囲を定義
-        #b = trial.suggest_int('b', 1, 10)  # ハイパーパラメータbの範囲を定義
         algorithms_train = {'AETC_train': OIM_AETC_Algorithm(train_G, train_EW, seed_size, oracle, iterationTimes, a)}
-        #algorithms_train = {'AETC_train': OIM_AETC_Algorithm(G, EwTrue, seed_size, oracle, iterationTimes, a, b)}
-        return simExperiment_train.runAlgorithms_train(algorithms_train)  # メトリクスを返す
 
-    # Studyの作成
-    study = optuna.create_study(direction="maximize")
+        # 再試行の回数を設定（例：5回）
+        n_repeats = 5
 
-    # 最初のa=0でbを変化させた試行をOptunaのキューに追加
-    """
-    for i in range(10):
-        study.enqueue_trial({'a': i+1})
-    """
+        # 評価結果を格納するリスト
+        results = []
 
-    # Optunaの最適化を実行
-    study.optimize(objective, n_trials=100)  # 通常の最適化を実行
+        # 再試行を行い、その結果を格納
+        for i in range(n_repeats):
+            result = simExperiment_train.runAlgorithms_train(algorithms_train)  # メトリクスを取得
+            results.append(result)
+
+            # 途中結果を Optuna に報告し、プルーニングを行う
+            trial.report(np.mean(results), i)
+
+            # 早期終了の条件を満たす場合、プルーニングを実施
+            if trial.should_prune():
+                raise optuna.TrialPruned()
+
+        # 結果の平均を取って返す
+        return np.mean(results)
+
+    # HyperbandPruner を使用する
+    pruner = optuna.pruners.HyperbandPruner()
+
+    # Optuna の Study を作成し、HyperbandPruner を指定
+    study = optuna.create_study(direction='maximize', pruner=pruner)
+
+    # 最適化を実行
+    study.optimize(objective, n_trials=50)
+
+    # 結果の確認
+    print(f"Best parameter: {study.best_params}")
+    print(f"Best objective value: {study.best_value}")
     save_address_optuna =  os.path.join(save_address, 'optuna_plot')
     # ディレクトリが存在しない場合は作成
     os.makedirs(save_address_optuna, exist_ok=True)
@@ -332,6 +353,7 @@ if __name__ == '__main__':
     # フルパスを作成して画像を保存
     full_path = os.path.join(save_address_optuna, file_name)
     plt.savefig(full_path)  # 保存するファイルパスを指定
+
 
     print("Num of nodes", len(G.nodes))
     print("Num of edges", len(G.in_edges))
