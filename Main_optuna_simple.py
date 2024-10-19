@@ -337,7 +337,7 @@ if __name__ == '__main__':
     study = optuna.create_study(direction='maximize', pruner=pruner)
 
     # 最適化を実行
-    study.optimize(objective, n_trials=50)
+    study.optimize(objective, n_trials=100)
 
     # 結果の確認
     print(f"Best parameter: {study.best_params}")

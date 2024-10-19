@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # 実行回数を指定
-max_runs=2  # 実行回数を変更できます
+max_runs=5  # 実行回数を変更できます
 wait_time=5 # 次の実行までの待機時間（秒単位）
 #seed_size=3 # シードサイズ
 #iteration=10000 # 反復数
 node_num=25 # ノード数
-iterations=(1000 5000 10000) # 反復数
-seed_sizes=(3 5) # シードサイズ
+iterations=(1000 2500 5000 10000 25000 50000) # 反復数
+seed_sizes=(3) # シードサイズ
 
 # シードサイズと反復数に基づいてPythonスクリプトを実行
 for seed_size in "${seed_sizes[@]}"; do
